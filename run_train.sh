@@ -52,4 +52,8 @@ export CUDA_CACHE_PATH="${CUDA_CACHE_PATH:-$UFO_CACHE_DIR/cuda}"
 export WARP_CACHE_PATH="${WARP_CACHE_PATH:-$UFO_CACHE_DIR/warp}"
 export NCCL_NVLS_ENABLE="${NCCL_NVLS_ENABLE:-0}"
 
+if [[ -n "${UFO_PYTHON:-}" ]]; then
+  exec "$UFO_PYTHON" -m humanoidverse.train "$@"
+fi
+
 exec uv run python -m humanoidverse.train "$@"

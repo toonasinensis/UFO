@@ -239,6 +239,70 @@ def _fps_from_npz(npz: Any, path: Path, fps: float | int | None) -> float:
     return motion_fps
 
 
+def _robot_state_arrays_from_npz(
+    npz: Any,
+    path: Path,
+    robot_spec: RobotSpec,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, list[str] | None, str]:
+    """Read either UFO RobotState fields or BFM/IsaacLab named-NPZ fields."""
+
+    normalized_fields = ("root_pos", "root_quat", "dof_pos")
+    if all(field in npz for field in normalized_fields):
+        joint_names = _string_list_from_npz(npz["joint_names"]) if "joint_names" in npz else None
+        return (
+            np.asarray(npz["root_pos"], dtype=np.float32),
+            np.asarray(npz["root_quat"], dtype=np.float32),
+            np.asarray(npz["dof_pos"], dtype=np.float32),
+            joint_names,
+            "robot_state_npz",
+        )
+
+    named_fields = ("joint_pos", "body_pos_w", "body_quat_w", "joint_names", "body_names")
+    if all(field in npz for field in named_fields):
+        body_names = _string_list_from_npz(npz["body_names"])
+        if len(set(body_names)) != len(body_names):
+            raise ValueError(f"robot_state_npz file={path} body_names contains duplicates")
+        try:
+            base_idx = body_names.index(robot_spec.base_body)
+        except ValueError as exc:
+            raise ValueError(
+                f"robot_state_npz file={path} body_names does not contain RobotSpec.base_body={robot_spec.base_body!r}"
+            ) from exc
+
+        body_pos = np.asarray(npz["body_pos_w"], dtype=np.float32)
+        body_quat_wxyz = np.asarray(npz["body_quat_w"], dtype=np.float32)
+        expected_body_pos_shape = (body_pos.shape[0], len(body_names), 3) if body_pos.ndim == 3 else None
+        expected_body_quat_shape = (body_pos.shape[0], len(body_names), 4) if body_pos.ndim == 3 else None
+        if expected_body_pos_shape is None or body_pos.shape != expected_body_pos_shape:
+            raise ValueError(
+                f"robot_state_npz file={path} body_pos_w must have shape [T, {len(body_names)}, 3], "
+                f"got {body_pos.shape}"
+            )
+        if body_quat_wxyz.shape != expected_body_quat_shape:
+            raise ValueError(
+                f"robot_state_npz file={path} body_quat_w must have shape [T, {len(body_names)}, 4], "
+                f"got {body_quat_wxyz.shape}"
+            )
+
+        root_quat = body_quat_wxyz[:, base_idx]
+        if robot_spec.root_quat_order == "xyzw":
+            root_quat = root_quat[:, [1, 2, 3, 0]]
+        return (
+            body_pos[:, base_idx],
+            root_quat,
+            np.asarray(npz["joint_pos"], dtype=np.float32),
+            _string_list_from_npz(npz["joint_names"]),
+            "bfm_named_npz",
+        )
+
+    missing_normalized = [field for field in normalized_fields if field not in npz]
+    missing_named = [field for field in named_fields if field not in npz]
+    raise ValueError(
+        f"robot_state_npz file={path} is neither normalized RobotState NPZ "
+        f"(missing {missing_normalized}) nor BFM/IsaacLab named NPZ (missing {missing_named})"
+    )
+
+
 def read_robot_state_npz(
     path_spec: str | os.PathLike[str] | list[str],
     *,
@@ -250,10 +314,11 @@ def read_robot_state_npz(
     data: dict[str, RobotStateMotion] = {}
     for path in expand_motion_paths(path_spec, base_dir=base_dir, suffix=".npz"):
         with np.load(path, allow_pickle=True) as npz:
-            missing = [field for field in ("root_pos", "root_quat", "dof_pos") if field not in npz]
-            if missing:
-                raise ValueError(f"robot_state_npz source={source_name}, file={path}: missing fields {missing}")
-            joint_names = _string_list_from_npz(npz["joint_names"]) if "joint_names" in npz else None
+            root_pos, root_quat, dof_pos, joint_names, reader = _robot_state_arrays_from_npz(
+                npz,
+                path,
+                robot_spec,
+            )
             if joint_names is None:
                 logger.warning(
                     f"robot_state_npz file={path} has no joint_names; assuming dof_pos is ordered as RobotSpec.control_joint_names"
@@ -263,12 +328,12 @@ def read_robot_state_npz(
                 raise ValueError(f"Duplicate motion_key={motion_key} while reading robot_state_npz source={source_name}")
             data[motion_key] = RobotStateMotion(
                 motion_key=motion_key,
-                root_pos=np.asarray(npz["root_pos"], dtype=np.float32),
-                root_quat=np.asarray(npz["root_quat"], dtype=np.float32),
-                dof_pos=np.asarray(npz["dof_pos"], dtype=np.float32),
+                root_pos=root_pos,
+                root_quat=root_quat,
+                dof_pos=dof_pos,
                 fps=_fps_from_npz(npz, path, fps),
                 joint_names=joint_names,
                 source=source_name,
-                metadata={"path": str(path), "reader": "robot_state_npz"},
+                metadata={"path": str(path), "reader": reader},
             )
     return validate_robot_state_dict(data, robot_spec, source_name)

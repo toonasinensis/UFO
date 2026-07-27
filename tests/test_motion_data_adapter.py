@@ -200,6 +200,24 @@ def _write_robot_state_npz(path: Path, *, frames: int = 4, swapped_joint_names: 
     )
 
 
+def _write_bfm_named_npz(path: Path, *, frames: int = 4) -> None:
+    idx = np.arange(frames, dtype=np.float32)
+    body_pos = np.zeros((frames, 3, 3), dtype=np.float32)
+    body_pos[:, 1, 0] = idx
+    body_pos[:, 1, 2] = 1.0
+    body_quat_wxyz = np.zeros((frames, 3, 4), dtype=np.float32)
+    body_quat_wxyz[..., 0] = 1.0
+    np.savez(
+        path,
+        joint_pos=np.stack([idx + 1.0, 0.1 * (idx + 1.0)], axis=1).astype(np.float32),
+        joint_names=np.asarray(["joint2", "joint1"]),
+        body_pos_w=body_pos,
+        body_quat_w=body_quat_wxyz,
+        body_names=np.asarray(["link1", "base", "link2"]),
+        fps=np.asarray([50]),
+    )
+
+
 class MotionDataAdapterTest(unittest.TestCase):
     def test_validate_ufo_motion_dict(self) -> None:
         data = validate_ufo_motion_dict(_motion_dict(), "unit")
@@ -354,6 +372,20 @@ class MotionDataAdapterTest(unittest.TestCase):
             self.assertIsInstance(data["state"], RobotStateMotion)
             self.assertEqual(data["state"].joint_names, ["joint1", "joint2"])
             self.assertAlmostEqual(float(data["state"].dof_pos[1, 0]), 0.2)
+
+    def test_robot_state_npz_reader_accepts_bfm_named_layout(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            _, robot_config = _write_tiny_robot(root)
+            spec = load_robot_spec(robot_config)
+            path = root / "state.npz"
+            _write_bfm_named_npz(path)
+            data = read_robot_state_npz(str(path), source_name="robot_npz", robot_spec=spec)
+            motion = data["state"]
+            self.assertEqual(motion.metadata["reader"], "bfm_named_npz")
+            np.testing.assert_allclose(motion.root_pos[2], np.asarray([2.0, 0.0, 1.0]))
+            np.testing.assert_allclose(motion.root_quat[0], np.asarray([0.0, 0.0, 0.0, 1.0]))
+            self.assertAlmostEqual(float(motion.dof_pos[1, 0]), 0.2)
 
     def test_robot_state_converter_outputs_ufo_motion_dict(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -15,6 +16,7 @@ import joblib
 import mediapy as media
 import numpy as np
 import torch
+from mjlab.viewer.native.viewer import NativeMujocoViewer
 from torch.utils._pytree import tree_map
 
 from humanoidverse.agents.load_utils import load_model_from_checkpoint_dir
@@ -35,6 +37,66 @@ from humanoidverse.utils.robot_spec import assert_robot_configs_compatible, load
 
 
 DEFAULT_ROBOT_CONFIG = "configs/robots/g1_29dof.yaml"
+
+
+def _configure_mujoco_window_backend(*, headless: bool) -> None:
+    if headless:
+        os.environ.setdefault("MUJOCO_GL", "egl")
+        os.environ.setdefault("PYOPENGL_PLATFORM", "egl")
+        return
+    os.environ["MUJOCO_GL"] = "glfw"
+    os.environ["PYOPENGL_PLATFORM"] = "glfw"
+
+
+class _TrackingSequencePolicy:
+    def __init__(self, model: torch.nn.Module, z: torch.Tensor) -> None:
+        self.model = model
+        self.z = z
+        self.step_idx = 0
+
+    @torch.no_grad()
+    def __call__(self, obs: Any) -> torch.Tensor:
+        idx = min(self.step_idx, max(int(self.z.shape[0]) - 1, 0))
+        action = self.model.act(obs, self.z[idx].unsqueeze(0), mean=True)
+        self.step_idx += 1
+        return action
+
+    def reset(self) -> None:
+        self.step_idx = 0
+
+
+class _TrackingViewerEnv:
+    def __init__(
+        self,
+        wrapped_env: Any,
+        *,
+        target_states: dict[str, torch.Tensor],
+        initial_observation: Any,
+    ) -> None:
+        self.wrapped_env = wrapped_env
+        self.target_states = target_states
+        self._observation = initial_observation
+        self.num_envs = wrapped_env.num_envs
+        self.device = wrapped_env.device
+        self.cfg = wrapped_env.base_env.mjlab_env.cfg
+
+    @property
+    def unwrapped(self) -> Any:
+        return self.wrapped_env.base_env.mjlab_env
+
+    def get_observations(self) -> Any:
+        return self._observation
+
+    def step(self, actions: torch.Tensor) -> tuple[Any, ...]:
+        self._observation, reward, terminated, truncated, info = self.wrapped_env.step(actions, to_numpy=False)
+        return self._observation, reward, terminated, truncated, info
+
+    def reset(self) -> Any:
+        self._observation, info = self.wrapped_env.reset(to_numpy=False, target_states=self.target_states)
+        return self._observation, info
+
+    def close(self) -> None:
+        return None
 
 
 def _resize_nearest(frame: np.ndarray, height: int, width: int) -> np.ndarray:
@@ -172,8 +234,10 @@ def run_tracking_inference(
     log_every_steps: int,
     max_episode_length_s: float,
     export_onnx: bool,
+    live_view: bool,
 ) -> None:
     model_folder = model_folder.expanduser().resolve()
+    _configure_mujoco_window_backend(headless=headless)
     checkpoint_dir = model_folder / "checkpoint"
     if not checkpoint_dir.exists():
         raise FileNotFoundError(f"Missing checkpoint directory: {checkpoint_dir}")
@@ -233,6 +297,7 @@ def run_tracking_inference(
         if save_mp4
         else None
     )
+    enable_live_view = bool(live_view and not headless)
     try:
         for motion_id in motion_list:
             backward_obs, obs_dict = get_backward_observation(env, motion_id, use_root_height_obs=use_root_height_obs)
@@ -254,9 +319,24 @@ def run_tracking_inference(
             use_env_render = True
 
             print(f"[INFO] Running policy rollout for motion_id={motion_id}, steps={episode_len}", flush=True)
+            if enable_live_view and not save_mp4:
+                viewer_env = _TrackingViewerEnv(
+                    wrapped_env,
+                    target_states=target_states,
+                    initial_observation=observation,
+                )
+                viewer_policy = _TrackingSequencePolicy(model, z[:episode_len])
+                viewer = NativeMujocoViewer(viewer_env, viewer_policy, frame_rate=float(fps))
+                viewer.run(num_steps=episode_len)
+                print(f"[INFO] Live viewer finished for motion_id={motion_id}", flush=True)
+                continue
             for step in range(episode_len):
                 action = model.act(observation, z[step].unsqueeze(0), mean=True)
                 observation, _reward, terminated, truncated, _info = wrapped_env.step(action, to_numpy=False)
+
+                if enable_live_view:
+                    # Drive the on-screen viewer even when we are not saving frames.
+                    wrapped_env.render()
 
                 if save_mp4:
                     policy_frame, use_env_render = render_policy_frame(
@@ -310,6 +390,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--log-every-steps", type=int, default=100, help="Print rollout/render progress every N steps; 0 disables periodic logs.")
     parser.add_argument("--max-episode-length-s", type=float, default=10000.0)
     add_bool_arg(parser, "--export-onnx", True, "Export ONNX next to the checkpoint before inference.")
+    add_bool_arg(parser, "--live-view", True, "Actively render the environment window during rollout when headless is false.")
     args = parser.parse_args()
     manifest_robot_config = None
     if args.data_manifest is not None:
@@ -351,6 +432,7 @@ def main() -> None:
         log_every_steps=args.log_every_steps,
         max_episode_length_s=args.max_episode_length_s,
         export_onnx=args.export_onnx,
+        live_view=args.live_view,
     )
 
 

@@ -347,6 +347,7 @@ def load_mjlab_env_cfg(
     env_config = dict(config["env"])
     use_root_height_obs = bool(env_config.get("root_height_obs", False))
     env_config["device"] = device
+    env_config["headless"] = bool(headless)
     if robot_config is not None:
         training_spec = load_robot_training_spec(robot_config)
         env_config["mjcf_path"] = training_spec.robot.xml_path

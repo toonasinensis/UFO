@@ -44,7 +44,7 @@ DEFAULT_BUFFER_SIZE = 5120000
 DEFAULT_FB_UPDATE_Z_EVERY_STEP = 100
 DEFAULT_TECH_UPDATE_Z_EVERY_STEP = 10
 DEFAULT_UPDATE_Z_EVERY_STEP = DEFAULT_FB_UPDATE_Z_EVERY_STEP
-DEFAULT_WANDB_PROJECT = "ufo-humanoid"
+DEFAULT_WANDB_PROJECT = os.environ.get("WANDB_PROJECT", "ufo-humanoid")
 DEFAULT_ROBOT_CONFIG = "configs/robots/g1_29dof.yaml"
 
 AGENT_ALIASES = {
@@ -158,8 +158,8 @@ def build_ufo_mjlab_config(
         wandb_project=DEFAULT_WANDB_PROJECT,
     )
     agent_cfg = selected["agent_cfg"]
-    wandb_group = selected["wandb_group"]
-    wandb_project = selected["wandb_project"]
+    wandb_group = os.environ.get("WANDB_GROUP", selected["wandb_group"])
+    wandb_project = os.environ.get("WANDB_PROJECT", selected["wandb_project"])
     train_runtime = dict(selected["train_runtime"])
     if num_agent_updates is not None:
         if num_agent_updates <= 0:

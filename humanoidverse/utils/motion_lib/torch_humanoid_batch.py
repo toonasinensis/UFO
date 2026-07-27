@@ -28,7 +28,6 @@ import hydra
 from omegaconf import DictConfig
 from stl import mesh
 # import logging
-import open3d as o3d
 
 from loguru import logger
 from pathlib import Path
@@ -305,6 +304,8 @@ class Humanoid_Batch:
         return angular_velocity
     
     def load_mesh(self):
+        import open3d as o3d
+
         xml_base = os.path.dirname(self.mjcf_file)
         # Read the compiler tag from the g1.xml file to find if there is a meshdir defined
         tree = ETree.parse(self.mjcf_file)

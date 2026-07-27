@@ -1,0 +1,177 @@
+name: roban_s22
+xml_path: humanoidverse/data/robots/roban_s22/xml/roban_s22.xml
+
+base_body: base_link
+root_quat_order: wxyz
+coordinate_system: z_up
+dof_unit: rad
+
+# Roban training intentionally leaves the two head joints passive, matching
+# BFM-Zero-ManagerOnly and the named Roban motion dataset.
+control_joints:
+  mode: explicit
+  names:
+    - leg_l1_joint
+    - leg_l2_joint
+    - leg_l3_joint
+    - leg_l4_joint
+    - leg_l5_joint
+    - leg_l6_joint
+    - leg_r1_joint
+    - leg_r2_joint
+    - leg_r3_joint
+    - leg_r4_joint
+    - leg_r5_joint
+    - leg_r6_joint
+    - waist_yaw_joint
+    - zarm_l1_joint
+    - zarm_l2_joint
+    - zarm_l3_joint
+    - zarm_l4_joint
+    - zarm_r1_joint
+    - zarm_r2_joint
+    - zarm_r3_joint
+    - zarm_r4_joint
+
+feet: [leg_l6_link, leg_r6_link]
+hands: [zarm_l4_link, zarm_r4_link]
+key_bodies: [base_link, waist_yaw_link, leg_l6_link, leg_r6_link, zarm_l4_link, zarm_r4_link]
+default_dof_pos: {}
+
+training:
+  hydra_robot: roban/roban_s22
+  hydra_overrides: []
+  semantics:
+    contact_bodies: [leg_l6_link, leg_r6_link]
+    undesired_contact_bodies:
+      - base_link
+      - zarm_l1_link
+      - zarm_l2_link
+      - zarm_l3_link
+      - zarm_l4_link
+      - zarm_r1_link
+      - zarm_r2_link
+      - zarm_r3_link
+      - zarm_r4_link
+      - leg_l1_link
+      - leg_l2_link
+      - leg_l3_link
+      - leg_l4_link
+      - leg_l5_link
+      - leg_l6_link
+      - leg_r1_link
+      - leg_r2_link
+      - leg_r3_link
+      - leg_r4_link
+      - leg_r5_link
+      - leg_r6_link
+    torso_name: waist_yaw_link
+    left_ankle_dof_names: [leg_l5_joint, leg_l6_joint]
+    right_ankle_dof_names: [leg_r5_joint, leg_r6_joint]
+  init_state:
+    pos: [0.0, 0.0, 0.8]
+    rot: [0.0, 0.0, 0.0, 1.0]
+    lin_vel: [0.0, 0.0, 0.0]
+    ang_vel: [0.0, 0.0, 0.0]
+    default_joint_angles:
+      leg_l1_joint: 0.0
+      leg_l2_joint: 0.0
+      leg_l3_joint: 0.0
+      leg_l4_joint: 0.0
+      leg_l5_joint: 0.0
+      leg_l6_joint: 0.0
+      leg_r1_joint: 0.0
+      leg_r2_joint: 0.0
+      leg_r3_joint: 0.0
+      leg_r4_joint: 0.0
+      leg_r5_joint: 0.0
+      leg_r6_joint: 0.0
+      waist_yaw_joint: 0.0
+      zarm_l1_joint: 0.0
+      zarm_l2_joint: 0.0
+      zarm_l3_joint: 0.0
+      zarm_l4_joint: 0.0
+      zarm_r1_joint: 0.0
+      zarm_r2_joint: 0.0
+      zarm_r3_joint: 0.0
+      zarm_r4_joint: 0.0
+  control:
+    action_scale: 0.25
+    action_clip_value: 5.0
+    normalize_action_to: 5.0
+    effort_limit_scale: 1.0
+    effort_limit: [150.0, 150.0, 70.0, 150.0, 74.0, 74.0, 150.0, 150.0, 70.0, 150.0, 74.0, 74.0, 80.0, 14.1, 37.0, 37.0, 37.0, 14.1, 37.0, 37.0, 37.0]
+    velocity_limit: [14.6, 14.6, 12.0, 14.6, 17.0, 17.0, 14.6, 14.6, 12.0, 14.6, 17.0, 17.0, 12.0, 10.5, 15.0, 15.0, 15.0, 10.5, 15.0, 15.0, 15.0]
+    stiffness:
+      waist_yaw_joint: 40.1792
+      leg_l1_joint: 90.1792
+      leg_l2_joint: 150.0984
+      leg_l3_joint: 40.1792
+      leg_l4_joint: 150.0984
+      leg_l5_joint: 34.2506
+      leg_l6_joint: 34.2506
+      leg_r1_joint: 90.1792
+      leg_r2_joint: 150.0984
+      leg_r3_joint: 40.1792
+      leg_r4_joint: 150.0984
+      leg_r5_joint: 34.2506
+      leg_r6_joint: 34.2506
+      zarm_l1_joint: 14.2506
+      zarm_l2_joint: 14.2506
+      zarm_l3_joint: 14.2506
+      zarm_l4_joint: 14.2506
+      zarm_r1_joint: 14.2506
+      zarm_r2_joint: 14.2506
+      zarm_r3_joint: 14.2506
+      zarm_r4_joint: 14.2506
+    damping:
+      waist_yaw_joint: 3.5579
+      leg_l1_joint: 3.5579
+      leg_l2_joint: 8.3088
+      leg_l3_joint: 3.5579
+      leg_l4_joint: 8.3088
+      leg_l5_joint: 2.9072
+      leg_l6_joint: 2.9072
+      leg_r1_joint: 3.5579
+      leg_r2_joint: 8.3088
+      leg_r3_joint: 3.5579
+      leg_r4_joint: 8.3088
+      leg_r5_joint: 2.9072
+      leg_r6_joint: 2.9072
+      zarm_l1_joint: 1.9072
+      zarm_l2_joint: 1.9072
+      zarm_l3_joint: 1.9072
+      zarm_l4_joint: 1.9072
+      zarm_r1_joint: 1.9072
+      zarm_r2_joint: 1.9072
+      zarm_r3_joint: 1.9072
+      zarm_r4_joint: 1.9072
+  actuator:
+    source: yaml
+    joints:
+      leg_l1_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.0}
+      leg_l2_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.0}
+      leg_l3_joint: {effort_limit: 70.0, velocity_limit: 12.0, armature: 0.03178707, friction: 0.0}
+      leg_l4_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.0}
+      leg_l5_joint: {effort_limit: 74.0, velocity_limit: 17.0, armature: 0.036, friction: 0.0}
+      leg_l6_joint: {effort_limit: 74.0, velocity_limit: 17.0, armature: 0.036, friction: 0.0}
+      leg_r1_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.0}
+      leg_r2_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.0}
+      leg_r3_joint: {effort_limit: 70.0, velocity_limit: 12.0, armature: 0.03178707, friction: 0.0}
+      leg_r4_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.0}
+      leg_r5_joint: {effort_limit: 74.0, velocity_limit: 17.0, armature: 0.036, friction: 0.0}
+      leg_r6_joint: {effort_limit: 74.0, velocity_limit: 17.0, armature: 0.036, friction: 0.0}
+      waist_yaw_joint: {effort_limit: 80.0, velocity_limit: 12.0, armature: 0.03178707, friction: 0.0}
+      zarm_l1_joint: {effort_limit: 14.1, velocity_limit: 10.5, armature: 0.015, friction: 0.0}
+      zarm_l2_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.0}
+      zarm_l3_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.0}
+      zarm_l4_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.0}
+      zarm_r1_joint: {effort_limit: 14.1, velocity_limit: 10.5, armature: 0.015, friction: 0.0}
+      zarm_r2_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.0}
+      zarm_r3_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.0}
+      zarm_r4_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.0}
+
+metadata:
+  source: BFM-Zero-ManagerOnly
+  review_status: curated
+

@@ -295,6 +295,7 @@ def _compose_humanoidverse_config(
     num_envs: int,
     relative_config_path: str,
     hydra_overrides: list[str],
+    headless: bool,
     lafan_tail_path: str | list[str],
     data_mix_weights: list[float] | None,
     disable_obs_noise: bool,
@@ -312,7 +313,7 @@ def _compose_humanoidverse_config(
 
     cfg.num_envs = num_envs
     cfg.exp_base = "__no_exp_base__"
-    cfg.env.config.headless = True
+    cfg.env.config.headless = bool(headless)
     OmegaConf.set_struct(cfg, False)
     _patch_humanoidverse_robot_config(cfg, robot_training)
     cfg.robot.asset.asset_root = _resolve_humanoidverse_path(cfg.robot.asset.asset_root)
@@ -1267,6 +1268,7 @@ class HumanoidVerseMjlabConfig(BaseConfig):
     name: tp.Literal["humanoidverse_mjlab"] = "humanoidverse_mjlab"
 
     device: str = "cuda:0"
+    headless: bool = True
     lafan_tail_path: str | list[str]
     data_mix_weights: list[float] | None = None
     mjcf_path: str | None = None
@@ -1293,6 +1295,7 @@ class HumanoidVerseMjlabConfig(BaseConfig):
             num_envs=num_envs,
             relative_config_path=self.relative_config_path,
             hydra_overrides=list(self.hydra_overrides),
+            headless=self.headless,
             lafan_tail_path=self.lafan_tail_path,
             data_mix_weights=self.data_mix_weights,
             disable_obs_noise=self.disable_obs_noise,
