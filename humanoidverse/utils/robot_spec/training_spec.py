@@ -69,6 +69,7 @@ class RobotTrainingSpec:
     velocity_limits: list[float]
     effort_limit_scale: float
     actuator: dict[str, Any]
+    domain_randomization: dict[str, Any] | None
     contact_bodies: list[str]
     undesired_contact_bodies: list[str]
     torso_name: str
@@ -101,6 +102,9 @@ class RobotTrainingSpec:
             "velocity_limits": list(self.velocity_limits),
             "effort_limit_scale": self.effort_limit_scale,
             "actuator": dict(self.actuator),
+            "domain_randomization": (
+                dict(self.domain_randomization) if self.domain_randomization is not None else None
+            ),
             "contact_bodies": list(self.contact_bodies),
             "undesired_contact_bodies": list(self.undesired_contact_bodies),
             "torso_name": self.torso_name,
@@ -136,6 +140,17 @@ def load_robot_training_spec(config_path: str | Path) -> RobotTrainingSpec:
     control = _required_mapping(training, "control", context="training")
     init_state = _required_mapping(training, "init_state", context="training")
     actuator = _required_mapping(training, "actuator", context="training")
+    domain_randomization = None
+    domain_randomization_profile = training.get("domain_randomization_profile")
+    if domain_randomization_profile is not None:
+        profile_path = _resolve_path(str(domain_randomization_profile), base_dir=path.parent)
+        if not profile_path.exists():
+            raise FileNotFoundError(f"Domain randomization profile does not exist: {profile_path}")
+        profile = OmegaConf.to_container(OmegaConf.load(profile_path), resolve=True)
+        if not isinstance(profile, dict):
+            raise ValueError(f"Domain randomization profile must be a mapping: {profile_path}")
+        domain_randomization = dict(profile)
+        domain_randomization["_profile_path"] = str(profile_path)
 
     control_joints = list(robot.control_joint_names)
     joint_count = len(control_joints)
@@ -194,6 +209,7 @@ def load_robot_training_spec(config_path: str | Path) -> RobotTrainingSpec:
         velocity_limits=velocity_limits,
         effort_limit_scale=float(control.get("effort_limit_scale", 1.0)),
         actuator=actuator,
+        domain_randomization=domain_randomization,
         contact_bodies=contact_bodies,
         undesired_contact_bodies=undesired_contact_bodies,
         torso_name=torso_name,

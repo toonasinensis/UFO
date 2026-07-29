@@ -6,7 +6,7 @@ repo_dir="$(cd "$script_dir/.." && pwd)"
 
 export CUDA_VISIBLE_DEVICES="${UFO_CUDA_VISIBLE_DEVICES:-0}"
 export UFO_ROBAN_MOTION_DIR="${UFO_ROBAN_MOTION_DIR:-$repo_dir/../BFM-Zero-ManagerOnly/bfm/data/named_roban_lafan_10s}"
-export WANDB_ENTITY="${WANDB_ENTITY:-${BFM_WANDB_ENTITY:-xiechunyang1-hajimi}}"
+export WANDB_ENTITY="xiechunyang1-hajimi"
 export WANDB_PROJECT="${WANDB_PROJECT:-${BFM_WANDB_PROJECT:-hajimi}}"
 export WANDB_GROUP="${WANDB_GROUP:-${BFM_WANDB_GROUP:-ufo_fb}}"
 

@@ -9,14 +9,26 @@ from unittest.mock import patch
 import torch
 from omegaconf import OmegaConf
 
-from humanoidverse.agents.envs.humanoidverse_mjlab import HumanoidVerseMjlabCore
-from humanoidverse.train import _resolve_training_robot_config, build_ufo_mjlab_config, parse_args as parse_train_args
+from humanoidverse.agents.envs.humanoidverse_mjlab import (
+    HumanoidVerseMjlabCore,
+    _compose_humanoidverse_config,
+    make_mjlab_ufo_env_cfg,
+)
+from humanoidverse.agents.envs.mjlab_domain_randomization import (
+    actuator_delay_kwargs,
+    build_profile_events,
+    default_joint_position_range,
+)
 from humanoidverse.tracking_inference import (
     _expert_qpos_from_obs,
     _resolve_tracking_robot_config,
     _target_states_from_obs,
+)
+from humanoidverse.tracking_inference import (
     parse_args as parse_tracking_args,
 )
+from humanoidverse.train import _resolve_training_robot_config, build_ufo_mjlab_config
+from humanoidverse.train import parse_args as parse_train_args
 from humanoidverse.utils.robot_spec import load_robot_training_spec
 
 
@@ -114,6 +126,36 @@ def _write_tiny_robot_with_training(root: Path, *, missing_actuator_joint: bool 
 
 
 class RobotConfigTrainingTest(unittest.TestCase):
+    def _compose_roban(self, *, disable_dr: bool = False):
+        train_cfg = build_ufo_mjlab_config(
+            device="cpu",
+            work_dir="/tmp/ufo_dr_unit",
+            num_envs=2,
+            num_env_steps=1,
+            seed=1,
+            use_wandb=False,
+            wandb_run_name=None,
+            smoke=True,
+            robot_config="configs/robots/roban_s22.yaml",
+            data_path="unused.pkl",
+            disable_dr=disable_dr,
+        )
+        env_cfg = train_cfg.env
+        hv_cfg, _ = _compose_humanoidverse_config(
+            num_envs=2,
+            relative_config_path=env_cfg.relative_config_path,
+            hydra_overrides=list(env_cfg.hydra_overrides),
+            headless=True,
+            lafan_tail_path=env_cfg.lafan_tail_path,
+            data_mix_weights=None,
+            disable_obs_noise=False,
+            disable_domain_randomization=disable_dr,
+            max_episode_length_s=None,
+            root_height_obs=True,
+            robot_training=env_cfg.robot_training,
+        )
+        return env_cfg, hv_cfg
+
     def test_old_g1_default_builds_cfg(self) -> None:
         cfg = build_ufo_mjlab_config(
             device="cpu",
@@ -235,6 +277,82 @@ class RobotConfigTrainingTest(unittest.TestCase):
             tiny_robot = _write_tiny_robot_with_training(Path(tmpdir), missing_actuator_joint=True)
             with self.assertRaisesRegex(ValueError, "missing parameters for joint 'joint2'"):
                 load_robot_training_spec(tiny_robot)
+
+    def test_roban_domain_randomization_profile_is_centralized(self) -> None:
+        spec = load_robot_training_spec("configs/robots/roban_s22.yaml")
+        self.assertIsNotNone(spec.domain_randomization)
+        assert spec.domain_randomization is not None
+        self.assertTrue(spec.domain_randomization["enabled"])
+        self.assertTrue(
+            str(spec.domain_randomization["_profile_path"]).endswith(
+                "humanoidverse/data/robots/biped_s17/config/domain_randomization.yaml"
+            )
+        )
+
+    def test_roban_domain_randomization_events_and_delay(self) -> None:
+        env_cfg, hv_cfg = self._compose_roban()
+        events = build_profile_events(hv_cfg)
+        self.assertEqual(
+            set(events),
+            {
+                "material_friction",
+                "material_restitution",
+                "body_com_base",
+                "body_com_waist",
+                "body_com_limbs",
+                "body_mass_base",
+                "body_mass_waist",
+                "body_mass_limbs",
+                "actuator_gains",
+                "joint_friction",
+                "joint_armature",
+                "push_robots",
+            },
+        )
+        self.assertEqual(events["push_robots"].params["velocity_range"]["z"], (-0.1, 0.1))
+        delay = actuator_delay_kwargs(hv_cfg)
+        self.assertEqual(delay["delay_min_lag"], 0)
+        self.assertEqual(delay["delay_max_lag"], 5)
+        self.assertFalse(delay["delay_per_env_phase"])
+        self.assertEqual(default_joint_position_range(hv_cfg), (-0.03, 0.03))
+
+        mjlab_cfg = make_mjlab_ufo_env_cfg(
+            hv_cfg,
+            num_envs=2,
+            seed=1,
+            mjcf_path=env_cfg.mjcf_path,
+            auto_reset=False,
+            robot_training=env_cfg.robot_training,
+        )
+        self.assertEqual(set(mjlab_cfg.events), set(events))
+
+    def test_disable_dr_overrides_roban_profile(self) -> None:
+        env_cfg, hv_cfg = self._compose_roban(disable_dr=True)
+        self.assertFalse(hv_cfg.domain_rand.profile.enabled)
+        self.assertEqual(build_profile_events(hv_cfg), {})
+        self.assertEqual(actuator_delay_kwargs(hv_cfg), {})
+        self.assertIsNone(default_joint_position_range(hv_cfg))
+
+        mjlab_cfg = make_mjlab_ufo_env_cfg(
+            hv_cfg,
+            num_envs=2,
+            seed=1,
+            mjcf_path=env_cfg.mjcf_path,
+            auto_reset=False,
+            robot_training=env_cfg.robot_training,
+        )
+        self.assertEqual(mjlab_cfg.events, {})
+        self.assertEqual(mjlab_cfg.scene.entities["robot"].articulation.actuators[0].delay_max_lag, 0)
+
+    def test_profile_enabled_defaults_to_false_and_bad_selectors_fail_fast(self) -> None:
+        _, hv_cfg = self._compose_roban()
+        del hv_cfg.domain_rand.profile["enabled"]
+        self.assertEqual(build_profile_events(hv_cfg), {})
+
+        hv_cfg.domain_rand.profile.enabled = True
+        hv_cfg.domain_rand.profile.body_com.base.body_names = "missing_body"
+        with self.assertRaisesRegex(ValueError, "matched no names"):
+            build_profile_events(hv_cfg)
 
     def test_tracking_shapes_follow_num_dof(self) -> None:
         obs = {

@@ -16,6 +16,7 @@ checkpoint/
 tea_debug.log
 *.log
 
+*.npz
 # OS/editor
 .DS_Store
 .vscode/

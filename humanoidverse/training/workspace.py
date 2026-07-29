@@ -407,7 +407,19 @@ def init_wandb(cfg: TrainConfig):
     from pathlib import Path
     exp_name = cfg.wandb_run_name if cfg.wandb_run_name else Path(cfg.work_dir).name
     wandb_config = cfg.model_dump()
-    wandb.init(entity=cfg.wandb_ename, project=cfg.wandb_pname, group=cfg.wandb_gname, name=exp_name, config=wandb_config, dir="./_wandb")
+    # Console capture generated enough filestream traffic to kill syncing on
+    # long-running jobs. Keep it disabled, but retain system stats because the
+    # W&B service uses their heartbeat to keep the run in the "running" state.
+    settings = wandb.Settings(console="off")
+    wandb.init(
+        entity=cfg.wandb_ename,
+        project=cfg.wandb_pname,
+        group=cfg.wandb_gname,
+        name=exp_name,
+        config=wandb_config,
+        dir="./_wandb",
+        settings=settings,
+    )
 
 
 class Workspace:

@@ -4,5 +4,4 @@ datasets:
   - name: roban_lafan_10s
     format: robot_state_npz
     weight: 1.0
-    train_path: ${oc.env:UFO_ROBAN_MOTION_DIR}
-
+    train_path: ../../humanoidverse/data/roban/named_roban_lafan_10s

@@ -15,7 +15,6 @@ from typing import Any, Dict, Tuple, Union
 
 import gymnasium
 import hydra
-import humanoidverse
 import numpy as np
 import pydantic
 import torch
@@ -24,7 +23,15 @@ from gymnasium.vector import VectorEnv
 from omegaconf import OmegaConf
 from torch.utils._pytree import tree_map
 
+import humanoidverse
 from humanoidverse.agents.base import BaseConfig
+from humanoidverse.agents.envs.mjlab_domain_randomization import (
+    actuator_delay_kwargs,
+    build_profile_events,
+    default_joint_position_range,
+    disable_profile,
+    get_profile,
+)
 from humanoidverse.envs.env_utils.history_handler import HistoryHandler as HVHistoryHandler
 from humanoidverse.envs.motion_observations import compute_humanoid_observations_max
 from humanoidverse.utils.helpers import pre_process_config
@@ -35,8 +42,8 @@ from humanoidverse.utils.torch_utils import (
     quat_from_angle_axis,
     quat_mul,
     quat_rotate_inverse,
-    wxyz_to_xyzw,
     wrap_to_pi,
+    wxyz_to_xyzw,
     xyzw_to_wxyz,
 )
 
@@ -208,6 +215,9 @@ def _patch_humanoidverse_robot_config(config, robot_training: dict[str, Any] | N
     config.robot.control.action_scale = float(robot_training["action_scale"])
     config.robot.control.action_clip_value = float(robot_training["action_clip_value"])
     config.robot.control.normalize_action_to = float(robot_training["normalize_action_to"])
+    domain_randomization = robot_training.get("domain_randomization")
+    if domain_randomization is not None:
+        config.domain_rand = OmegaConf.create({"profile": domain_randomization})
 
     xml_path = Path(robot_info["xml_path"]).expanduser().resolve()
     if config.robot.get("asset") is None:
@@ -330,16 +340,19 @@ def _compose_humanoidverse_config(
     cfg.obs.root_height_obs = root_height_obs
 
     if disable_domain_randomization:
-        cfg.domain_rand.randomize_ctrl_delay = False
-        cfg.domain_rand.randomize_pd_gain = False
-        cfg.domain_rand.randomize_base_com = False
-        cfg.domain_rand.randomize_link_mass = False
-        cfg.domain_rand.randomize_friction = False
-        cfg.domain_rand.randomize_torque_rfi = False
-        cfg.domain_rand.randomize_rfi_lim = False
-        cfg.domain_rand.randomize_push_robots = False
-        cfg.domain_rand.push_robots = False
-        cfg.domain_rand.randomize_default_dof_pos = False
+        if get_profile(cfg) is not None:
+            disable_profile(cfg)
+        else:
+            cfg.domain_rand.randomize_ctrl_delay = False
+            cfg.domain_rand.randomize_pd_gain = False
+            cfg.domain_rand.randomize_base_com = False
+            cfg.domain_rand.randomize_link_mass = False
+            cfg.domain_rand.randomize_friction = False
+            cfg.domain_rand.randomize_torque_rfi = False
+            cfg.domain_rand.randomize_rfi_lim = False
+            cfg.domain_rand.randomize_push_robots = False
+            cfg.domain_rand.push_robots = False
+            cfg.domain_rand.randomize_default_dof_pos = False
 
     assert cfg.env.config.termination.terminate_when_close_to_dof_pos_limit is False
     assert cfg.env.config.termination.terminate_when_close_to_dof_vel_limit is False
@@ -411,6 +424,7 @@ def make_mjlab_ufo_env_cfg(
     velocity_limits = actuator_params["velocity_limit"]
     armature = actuator_params["armature"]
     friction = actuator_params["friction"]
+    delay_kwargs = actuator_delay_kwargs(config)
 
     actuators = []
     action_scale = {}
@@ -428,6 +442,7 @@ def make_mjlab_ufo_env_cfg(
                 velocity_limit=velocity_limits[i],
                 armature=armature[i] if i < len(armature) else None,
                 frictionloss=friction[i] if i < len(friction) else None,
+                **delay_kwargs,
             )
         )
 
@@ -504,8 +519,9 @@ def make_mjlab_ufo_env_cfg(
         "time_out": TerminationTermCfg(func=mjlab_terminations.time_out, time_out=True),
     }
     domain_rand = config.domain_rand
-    events = {}
-    if bool(domain_rand.get("push_robots", False)):
+    profile = get_profile(config)
+    events = build_profile_events(config) if profile is not None else {}
+    if profile is None and bool(domain_rand.get("push_robots", False)):
         max_push_vel_xy = float(domain_rand.max_push_vel_xy)
         max_push_ang_vel = float(domain_rand.get("max_push_ang_vel", 0.0))
         velocity_range = {
@@ -526,7 +542,7 @@ def make_mjlab_ufo_env_cfg(
             interval_range_s=tuple(float(x) for x in _to_list(domain_rand.push_interval_s)),
             params={"velocity_range": velocity_range},
         )
-    if bool(domain_rand.get("randomize_base_com", False)):
+    if profile is None and bool(domain_rand.get("randomize_base_com", False)):
         base_com_range = domain_rand.base_com_range
         events["random_base_com"] = EventTermCfg(
             mode="startup",
@@ -541,7 +557,7 @@ def make_mjlab_ufo_env_cfg(
                 },
             },
         )
-    if bool(domain_rand.get("randomize_link_mass", False)):
+    if profile is None and bool(domain_rand.get("randomize_link_mass", False)):
         events["random_link_mass"] = EventTermCfg(
             mode="startup",
             func=mjlab_dr.body_mass,
@@ -551,7 +567,7 @@ def make_mjlab_ufo_env_cfg(
                 "ranges": tuple(float(x) for x in _to_list(domain_rand.link_mass_range)),
             },
         )
-    if bool(domain_rand.get("randomize_friction", False)):
+    if profile is None and bool(domain_rand.get("randomize_friction", False)):
         events["random_geom_friction"] = EventTermCfg(
             mode="startup",
             func=mjlab_dr.geom_friction,
@@ -831,8 +847,8 @@ class HumanoidVerseMjlabCore:
             self.motion_start_times[env_ids] = self._motion_lib.sample_time(self.motion_ids[env_ids])
 
     def _randomize_default_dof_pos_offset(self, env_ids: torch.Tensor) -> None:
-        if bool(self.config.domain_rand.get("randomize_default_dof_pos", False)):
-            offset_range = self.config.domain_rand.default_dof_pos_noise_range
+        offset_range = default_joint_position_range(self.config)
+        if offset_range is not None:
             self.default_dof_pos_offset[env_ids] = torch.empty(
                 len(env_ids), self.num_dof, device=self.device, dtype=torch.float32
             ).uniform_(float(offset_range[0]), float(offset_range[1]))

@@ -1,0 +1,7 @@
+robot_config: ../robots/roban_s22.yaml
+
+datasets:
+  - name: roban_lafan
+    format: robot_state_npz
+    weight: 1.0
+    train_path: ../../humanoidverse/data/roban/named_roban_lafan

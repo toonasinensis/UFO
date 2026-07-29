@@ -97,6 +97,7 @@ def build_ufo_mjlab_config(
     use_wandb: bool,
     wandb_run_name: str | None,
     checkpoint_every_steps: int = 9600000,
+    eval_every_steps: int | None = None,
     distributed_rank: int = 0,
     distributed_world_size: int = 1,
     disable_eval_prioritization: bool = False,
@@ -228,7 +229,7 @@ def build_ufo_mjlab_config(
         use_trajectory_buffer=train_runtime["use_trajectory_buffer"],
         buffer_size=int(buffer_size),
         use_wandb=use_wandb,
-        wandb_ename=os.environ.get("WANDB_ENTITY", "xuewangusst-1"),
+        wandb_ename=os.environ.get("WANDB_ENTITY", "xiechunyang1-hajimi"),
         wandb_gname=wandb_group,
         wandb_pname=wandb_project,
         wandb_run_name=wandb_run_name or f"ufo_{agent}",
@@ -236,7 +237,7 @@ def build_ufo_mjlab_config(
         buffer_device="cuda" if device.startswith("cuda") else "cpu",
         disable_tqdm=True,
         evaluations=evaluations,
-        eval_every_steps=train_runtime["eval_every_steps"],
+        eval_every_steps=train_runtime["eval_every_steps"] if eval_every_steps is None else int(eval_every_steps),
         distributed_rank=distributed_rank,
         distributed_world_size=distributed_world_size,
         rank0_only_writes=True,
@@ -303,6 +304,7 @@ def run_train(args: argparse.Namespace, log_dir: Path) -> None:
         use_wandb=bool(args.use_wandb and rank == 0),
         wandb_run_name=args.wandb_run_name,
         checkpoint_every_steps=args.checkpoint_every_steps,
+        eval_every_steps=args.eval_every_steps,
         distributed_rank=rank,
         distributed_world_size=world_size,
         disable_eval_prioritization=bool(args.disable_eval_prioritization),
@@ -422,6 +424,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--num-envs", type=int, default=DEFAULT_NUM_ENVS)
     parser.add_argument("--num-env-steps", type=int, default=DEFAULT_NUM_ENV_STEPS)
     parser.add_argument("--checkpoint-every-steps", type=int, default=DEFAULT_CHECKPOINT_EVERY_STEPS)
+    parser.add_argument("--eval-every-steps", type=int, default=None)
     parser.add_argument(
         "--data-path",
         nargs="+",

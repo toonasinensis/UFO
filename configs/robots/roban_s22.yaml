@@ -1,13 +1,13 @@
 name: roban_s22
-xml_path: humanoidverse/data/robots/roban_s22/xml/roban_s22.xml
+xml_path: humanoidverse/data/robots/biped_s17/xml/biped_s17_fixedheadjoint.xml
 
 base_body: base_link
 root_quat_order: wxyz
 coordinate_system: z_up
 dof_unit: rad
 
-# Roban training intentionally leaves the two head joints passive, matching
-# BFM-Zero-ManagerOnly and the named Roban motion dataset.
+# The head bodies and inertias remain in the MJCF, but their two joints are
+# removed so they are rigidly attached and excluded from the simulated DOFs.
 control_joints:
   mode: explicit
   names:
@@ -35,12 +35,13 @@ control_joints:
 
 feet: [leg_l6_link, leg_r6_link]
 hands: [zarm_l4_link, zarm_r4_link]
-key_bodies: [base_link, waist_yaw_link, leg_l6_link, leg_r6_link, zarm_l4_link, zarm_r4_link]
+key_bodies: [base_link, torso, leg_l6_link, leg_r6_link, zarm_l4_link, zarm_r4_link]
 default_dof_pos: {}
 
 training:
   hydra_robot: roban/roban_s22
   hydra_overrides: []
+  domain_randomization_profile: humanoidverse/data/robots/biped_s17/config/domain_randomization.yaml
   semantics:
     contact_bodies: [leg_l6_link, leg_r6_link]
     undesired_contact_bodies:
@@ -65,7 +66,7 @@ training:
       - leg_r4_link
       - leg_r5_link
       - leg_r6_link
-    torso_name: waist_yaw_link
+    torso_name: torso
     left_ankle_dof_names: [leg_l5_joint, leg_l6_joint]
     right_ankle_dof_names: [leg_r5_joint, leg_r6_joint]
   init_state:
@@ -174,4 +175,3 @@ training:
 metadata:
   source: BFM-Zero-ManagerOnly
   review_status: curated
-

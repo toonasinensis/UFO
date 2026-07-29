@@ -14,6 +14,7 @@ from typing import Any
 
 import joblib
 import mediapy as media
+import mujoco
 import numpy as np
 import torch
 from mjlab.viewer.native.viewer import NativeMujocoViewer
@@ -97,6 +98,62 @@ class _TrackingViewerEnv:
 
     def close(self) -> None:
         return None
+
+
+class _TrackingReferenceViewer(NativeMujocoViewer):
+    """Native policy viewer with a translucent reference pose overlay."""
+
+    def __init__(
+        self,
+        env: Any,
+        policy: _TrackingSequencePolicy,
+        *,
+        reference_qpos: np.ndarray,
+        frame_rate: float,
+    ) -> None:
+        super().__init__(env, policy, frame_rate=frame_rate)
+        self.reference_qpos = np.asarray(reference_qpos, dtype=np.float64)
+        self.reference_data: mujoco.MjData | None = None
+        self.reference_rgba = np.asarray([0.0, 0.85, 1.0, 0.38], dtype=np.float32)
+
+    def setup(self) -> None:
+        super().setup()
+        assert self.mjm is not None
+        if self.reference_qpos.ndim != 2 or self.reference_qpos.shape[1] != self.mjm.nq:
+            self.close()
+            raise ValueError(
+                "Reference qpos is incompatible with the live-view model: "
+                f"expected (*, {self.mjm.nq}), got {self.reference_qpos.shape}"
+            )
+        self.reference_data = mujoco.MjData(self.mjm)
+        print("[INFO] Live reference overlay: translucent cyan robot", flush=True)
+
+    def _update_debug_visualizers(self, viewer: mujoco.viewer.Handle) -> None:
+        super()._update_debug_visualizers(viewer)
+        if self.reference_data is None or self.mjm is None or self.vopt is None:
+            return
+
+        # The policy increments step_idx when it emits an action. Matching that
+        # index mirrors the step+1 convention used by side-by-side MP4 export.
+        step_idx = min(self.policy.step_idx, len(self.reference_qpos) - 1)
+        self.reference_data.qpos[:] = self.reference_qpos[step_idx]
+        self.reference_data.qvel[:] = 0.0
+        mujoco.mj_forward(self.mjm, self.reference_data)
+
+        scene = viewer.user_scn
+        first_reference_geom = scene.ngeom
+        perturb = self.pert if self.pert is not None else mujoco.MjvPerturb()
+        mujoco.mjv_addGeoms(
+            self.mjm,
+            self.reference_data,
+            self.vopt,
+            perturb,
+            mujoco.mjtCatBit.mjCAT_DYNAMIC.value,
+            scene,
+        )
+        for geom_idx in range(first_reference_geom, scene.ngeom):
+            scene.geoms[geom_idx].rgba[:] = self.reference_rgba
+            scene.geoms[geom_idx].category = mujoco.mjtCatBit.mjCAT_DECOR.value
 
 
 def _resize_nearest(frame: np.ndarray, height: int, width: int) -> np.ndarray:
@@ -235,6 +292,7 @@ def run_tracking_inference(
     max_episode_length_s: float,
     export_onnx: bool,
     live_view: bool,
+    show_reference: bool,
 ) -> None:
     model_folder = model_folder.expanduser().resolve()
     _configure_mujoco_window_backend(headless=headless)
@@ -326,7 +384,15 @@ def run_tracking_inference(
                     initial_observation=observation,
                 )
                 viewer_policy = _TrackingSequencePolicy(model, z[:episode_len])
-                viewer = NativeMujocoViewer(viewer_env, viewer_policy, frame_rate=float(fps))
+                if show_reference:
+                    viewer = _TrackingReferenceViewer(
+                        viewer_env,
+                        viewer_policy,
+                        reference_qpos=expert_qpos[: episode_len + 1],
+                        frame_rate=float(fps),
+                    )
+                else:
+                    viewer = NativeMujocoViewer(viewer_env, viewer_policy, frame_rate=float(fps))
                 viewer.run(num_steps=episode_len)
                 print(f"[INFO] Live viewer finished for motion_id={motion_id}", flush=True)
                 continue
@@ -391,6 +457,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-episode-length-s", type=float, default=10000.0)
     add_bool_arg(parser, "--export-onnx", True, "Export ONNX next to the checkpoint before inference.")
     add_bool_arg(parser, "--live-view", True, "Actively render the environment window during rollout when headless is false.")
+    add_bool_arg(
+        parser,
+        "--show-reference",
+        False,
+        "Overlay the reference motion as a translucent cyan robot in the interactive live viewer.",
+    )
     args = parser.parse_args()
     manifest_robot_config = None
     if args.data_manifest is not None:
@@ -433,6 +505,7 @@ def main() -> None:
         max_episode_length_s=args.max_episode_length_s,
         export_onnx=args.export_onnx,
         live_view=args.live_view,
+        show_reference=args.show_reference,
     )
 
 
