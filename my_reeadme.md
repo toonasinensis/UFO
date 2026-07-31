@@ -59,7 +59,7 @@ https://wandb.ai/xiechunyang1-hajimi/hajimi/runs/i2vhz857
 
 cd /home/thl/wt_wbc/UFO
 CUDA_VISIBLE_DEVICES=0 .venv/bin/python -m humanoidverse.tracking_inference \
-  --model-folder ./runs/biped_17_torso_8kg_20260728_144404 \
+  --model-folder ./runs/add_sim_delay_20260730_101320 \
   --data-manifest configs/data/roban_s22_play.yaml \
   --dataset roban_lafan \
   --device cpu \

@@ -164,19 +164,21 @@ class DictBuffer:
                     current_dict[key] = {}
                 current_dict = current_dict[key]
 
-            storage_tensor = _to_torch(v[:], device=self.device)
-            if storage_tensor.shape[0] < self.capacity:
-                # If the shape is smaller than capacity, we need to pad it
-                storage_tensor = torch.cat(
-                    [
-                        storage_tensor,
-                        torch.zeros(
-                            (self.capacity - storage_tensor.shape[0], *storage_tensor.shape[1:]),
-                            device=self.device,
-                            dtype=storage_tensor.dtype,
-                        ),
-                    ]
+            loaded_array = v[:]
+            if loaded_array.shape[0] < self.capacity:
+                # Allocate the final storage only once. Moving the loaded prefix
+                # to the GPU and then concatenating a GPU padding tensor creates
+                # up to three simultaneous device allocations and can OOM while
+                # resuming an otherwise valid replay buffer.
+                loaded_cpu = torch.from_numpy(loaded_array)
+                storage_tensor = torch.zeros(
+                    (self.capacity, *loaded_cpu.shape[1:]),
+                    device=self.device,
+                    dtype=loaded_cpu.dtype,
                 )
+                storage_tensor[: loaded_cpu.shape[0]].copy_(loaded_cpu)
+            else:
+                storage_tensor = _to_torch(loaded_array, device=self.device)
             assert storage_tensor.shape[0] == self.capacity, (
                 f"Data shape {storage_tensor.shape} is larger than buffer capacity {self.capacity}. Seems like the saved buffer is corrupted"
             )

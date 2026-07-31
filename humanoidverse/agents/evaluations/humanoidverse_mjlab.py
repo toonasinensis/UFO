@@ -546,11 +546,6 @@ def _async_tracking_worker(
 
 
 
-QPOS_START = 23 + 3
-QPOS_END = 23 + 3 + 23
-QVEL_IDX = 23
-
-
 def distance_matrix(X: torch.Tensor, Y: torch.Tensor):
     X_norm = X.pow(2).sum(1).reshape(-1, 1)
     Y_norm = Y.pow(2).sum(1).reshape(1, -1)
@@ -580,10 +575,29 @@ def distance_proximity(next_obs: torch.Tensor, tracking_target: torch.Tensor, bo
     return stats
 
 
+def _pose_state_for_metrics(ep: Mapping[str, Any]) -> tuple[torch.Tensor, torch.Tensor]:
+    """Extract the robot-dependent joint-position prefix from actor state."""
+    target_joint_pos = torch.as_tensor(ep["target_joint_pos"])
+    if target_joint_pos.ndim < 2 or target_joint_pos.shape[-1] <= 0:
+        raise ValueError(
+            "target_joint_pos must have shape [..., num_dof] with num_dof > 0, "
+            f"got {tuple(target_joint_pos.shape)}"
+        )
+    num_dof = int(target_joint_pos.shape[-1])
+
+    next_state = torch.as_tensor(ep["observation"]["state"], dtype=torch.float32)
+    target_state = torch.as_tensor(ep["tracking_target"]["state"], dtype=torch.float32)
+    if next_state.shape[-1] < num_dof or target_state.shape[-1] < num_dof:
+        raise ValueError(
+            f"Actor state must contain at least num_dof={num_dof} joint-position values, "
+            f"got observation width={next_state.shape[-1]} and target width={target_state.shape[-1]}"
+        )
+    return next_state[..., :num_dof], target_state[..., :num_dof]
+
+
 def _calc_metrics(ep):
     metr = {}
-    next_obs = torch.tensor(ep["observation"]["state"][:, :QVEL_IDX], dtype=torch.float32)
-    tracking_target = torch.tensor(ep["tracking_target"]["state"][:, :QVEL_IDX], dtype=torch.float32)
+    next_obs, tracking_target = _pose_state_for_metrics(ep)
     dist_prox_res = distance_proximity(next_obs=next_obs, tracking_target=tracking_target, prefix="obs_state_")
     metr.update(dist_prox_res)
     emd_res = emd_numpy(next_obs=next_obs, tracking_target=tracking_target, prefix="obs_state_")

@@ -46,26 +46,25 @@ training:
     contact_bodies: [leg_l6_link, leg_r6_link]
     undesired_contact_bodies:
       - base_link
+      - torso
+      - zhead_1_link
+      - zhead_2_link
       - zarm_l1_link
       - zarm_l2_link
       - zarm_l3_link
-      - zarm_l4_link
       - zarm_r1_link
       - zarm_r2_link
       - zarm_r3_link
-      - zarm_r4_link
       - leg_l1_link
       - leg_l2_link
       - leg_l3_link
       - leg_l4_link
       - leg_l5_link
-      - leg_l6_link
       - leg_r1_link
       - leg_r2_link
       - leg_r3_link
       - leg_r4_link
       - leg_r5_link
-      - leg_r6_link
     torso_name: torso
     left_ankle_dof_names: [leg_l5_joint, leg_l6_joint]
     right_ankle_dof_names: [leg_r5_joint, leg_r6_joint]
