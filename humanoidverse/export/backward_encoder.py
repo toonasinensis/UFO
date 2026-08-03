@@ -209,13 +209,21 @@ def _verify_backward_encoder_onnx(
         )
 
     ort_session = ort.InferenceSession(str(output_path), providers=["CPUExecutionProvider"])
+    candidate_inputs = {
+        "state": example_state.numpy().astype(np.float32),
+        "last_action": example_last_action.numpy().astype(np.float32),
+        "privileged_state": example_privileged_state.numpy().astype(np.float32),
+    }
+    # torch.onnx removes inputs that do not affect the graph.  FB's backward
+    # map currently ignores last_action, so that nominal wrapper argument is
+    # normally absent from the exported ONNX graph.
+    actual_input_names = {model_input.name for model_input in ort_session.get_inputs()}
+    unknown_input_names = actual_input_names.difference(candidate_inputs)
+    if unknown_input_names:
+        raise RuntimeError(f"Backward encoder ONNX has unexpected inputs: {sorted(unknown_input_names)}")
     ort_z = ort_session.run(
         ["z"],
-        {
-            "state": example_state.numpy().astype(np.float32),
-            "last_action": example_last_action.numpy().astype(np.float32),
-            "privileged_state": example_privileged_state.numpy().astype(np.float32),
-        },
+        {name: candidate_inputs[name] for name in actual_input_names},
     )[0]
 
     max_abs = float(np.max(np.abs(torch_z - ort_z)))
