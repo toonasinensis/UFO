@@ -74,12 +74,12 @@
                     <geom size="0.035 0.005" pos="-0.02 0 -0.035" type="cylinder" class="collision"/>
                     <geom size="0.04 0.005" pos="0.11 0 -0.035" type="cylinder" class="collision"/>
                     <geom size="0.06 0.035 0.005" pos="0.038 0 -0.035" type="box" class="collision"/>
-                    <geom size="0.005" pos="0.1510 0.0415 -0.03" type="sphere" class="collision"/>
+                    <!-- <geom size="0.005" pos="0.1510 0.0415 -0.03" type="sphere" class="collision"/>
                     <geom size="0.005" pos="-0.0538 0.0415 -0.03" type="sphere" class="collision"/>
                     <geom size="0.005" pos="0.1510 -0.0415 -0.03" type="sphere" class="collision"/>
                     <geom size="0.005" pos="-0.0538 -0.0415 -0.03" type="sphere" class="collision"/>
                     <geom size="0.005" pos="0.1510 0 -0.03" type="sphere" class="collision"/>
-                    <geom size="0.005" pos="-0.0538 0 -0.03" type="sphere" class="collision"/>
+                    <geom size="0.005" pos="-0.0538 0 -0.03" type="sphere" class="collision"/> -->
                   </body>
                 </body>
               </body>
@@ -120,12 +120,12 @@
                     <geom size="0.035 0.005" pos="-0.02 0 -0.035" type="cylinder" class="collision"/>
                     <geom size="0.04 0.005" pos="0.11 0 -0.035" type="cylinder" class="collision"/>
                     <geom size="0.06 0.035 0.005" pos="0.038 0 -0.035" type="box" class="collision"/>
-                    <geom size="0.005" pos="0.1510 0.0415 -0.03" type="sphere" class="collision"/>
+                    <!-- <geom size="0.005" pos="0.1510 0.0415 -0.03" type="sphere" class="collision"/>
                     <geom size="0.005" pos="-0.0538 0.0415 -0.03" type="sphere" class="collision"/>
                     <geom size="0.005" pos="0.1510 -0.0415 -0.03" type="sphere" class="collision"/>
                     <geom size="0.005" pos="-0.0538 -0.0415 -0.03" type="sphere" class="collision"/>
                     <geom size="0.005" pos="0.1510 0 -0.03" type="sphere" class="collision"/>
-                    <geom size="0.005" pos="-0.0538 0 -0.03" type="sphere" class="collision"/>
+                    <geom size="0.005" pos="-0.0538 0 -0.03" type="sphere" class="collision"/> -->
                   </body>
                 </body>
               </body>
