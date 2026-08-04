@@ -1078,7 +1078,8 @@ class HumanoidVerseMjlabCore:
             self._resample_motion_time_and_ids(env_ids)
             motion_times = self.motion_start_times[env_ids]
             motion_res = self._motion_lib.get_motion_state(self.motion_ids[env_ids], motion_times, offset=self.env_origins[env_ids])
-            root_pos = motion_res["root_pos"]
+            root_pos = motion_res["root_pos"].clone()
+            root_pos[:, 2].add_(torch.empty_like(root_pos[:, 2]).uniform_(0.1, 0.2))
             root_rot = motion_res["root_rot"]
             root_vel = motion_res["root_vel"]
             root_ang_vel = motion_res["root_ang_vel"]
