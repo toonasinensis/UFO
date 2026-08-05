@@ -41,6 +41,7 @@ default_dof_pos: {}
 training:
   hydra_robot: roban/roban_s22
   hydra_overrides: []
+  domain_randomization_profile: humanoidverse/data/robots/roban_s22_handball/roban_s22_handball/config/domain_randomization.yaml
   semantics:
     contact_bodies: [leg_l6_link, leg_r6_link]
     undesired_contact_bodies:
@@ -148,27 +149,27 @@ training:
   actuator:
     source: yaml
     joints:
-      leg_l1_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.0}
-      leg_l2_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.0}
-      leg_l3_joint: {effort_limit: 70.0, velocity_limit: 12.0, armature: 0.03178707, friction: 0.0}
-      leg_l4_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.0}
-      leg_l5_joint: {effort_limit: 74.0, velocity_limit: 17.0, armature: 0.036, friction: 0.0}
-      leg_l6_joint: {effort_limit: 74.0, velocity_limit: 17.0, armature: 0.036, friction: 0.0}
-      leg_r1_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.0}
-      leg_r2_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.0}
-      leg_r3_joint: {effort_limit: 70.0, velocity_limit: 12.0, armature: 0.03178707, friction: 0.0}
-      leg_r4_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.0}
-      leg_r5_joint: {effort_limit: 74.0, velocity_limit: 17.0, armature: 0.036, friction: 0.0}
-      leg_r6_joint: {effort_limit: 74.0, velocity_limit: 17.0, armature: 0.036, friction: 0.0}
-      waist_yaw_joint: {effort_limit: 80.0, velocity_limit: 12.0, armature: 0.03178707, friction: 0.0}
-      zarm_l1_joint: {effort_limit: 14.1, velocity_limit: 10.5, armature: 0.015, friction: 0.0}
-      zarm_l2_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.0}
-      zarm_l3_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.0}
-      zarm_l4_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.0}
-      zarm_r1_joint: {effort_limit: 14.1, velocity_limit: 10.5, armature: 0.015, friction: 0.0}
-      zarm_r2_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.0}
-      zarm_r3_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.0}
-      zarm_r4_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.0}
+      leg_l1_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.01}
+      leg_l2_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.01}
+      leg_l3_joint: {effort_limit: 70.0, velocity_limit: 12.0, armature: 0.03178707, friction: 0.01}
+      leg_l4_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.01}
+      leg_l5_joint: {effort_limit: 74.0, velocity_limit: 17.0, armature: 0.036, friction: 0.01}
+      leg_l6_joint: {effort_limit: 74.0, velocity_limit: 17.0, armature: 0.036, friction: 0.01}
+      leg_r1_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.01}
+      leg_r2_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.01}
+      leg_r3_joint: {effort_limit: 70.0, velocity_limit: 12.0, armature: 0.03178707, friction: 0.01}
+      leg_r4_joint: {effort_limit: 150.0, velocity_limit: 14.6, armature: 0.0493, friction: 0.01}
+      leg_r5_joint: {effort_limit: 74.0, velocity_limit: 17.0, armature: 0.036, friction: 0.01}
+      leg_r6_joint: {effort_limit: 74.0, velocity_limit: 17.0, armature: 0.036, friction: 0.01}
+      waist_yaw_joint: {effort_limit: 80.0, velocity_limit: 12.0, armature: 0.03178707, friction: 0.01}
+      zarm_l1_joint: {effort_limit: 14.1, velocity_limit: 10.5, armature: 0.015, friction: 0.01}
+      zarm_l2_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.01}
+      zarm_l3_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.01}
+      zarm_l4_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.01}
+      zarm_r1_joint: {effort_limit: 14.1, velocity_limit: 10.5, armature: 0.015, friction: 0.01}
+      zarm_r2_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.01}
+      zarm_r3_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.01}
+      zarm_r4_joint: {effort_limit: 37.0, velocity_limit: 15.0, armature: 0.018, friction: 0.01}
 
 metadata:
   source: BFM-Zero-ManagerOnly

@@ -209,13 +209,22 @@ def _verify_backward_encoder_onnx(
         )
 
     ort_session = ort.InferenceSession(str(output_path), providers=["CPUExecutionProvider"])
+    # ONNX constant-folding can remove an observation that the trained
+    # backward map does not consume (commonly ``last_action``).  Feed exactly
+    # the inputs retained by the exported graph instead of assuming all wrapper
+    # arguments remain visible in ONNX Runtime.
+    candidate_inputs = {
+        "state": example_state.numpy().astype(np.float32),
+        "last_action": example_last_action.numpy().astype(np.float32),
+        "privileged_state": example_privileged_state.numpy().astype(np.float32),
+    }
+    actual_input_names = {item.name for item in ort_session.get_inputs()}
+    unknown = actual_input_names.difference(candidate_inputs)
+    if unknown:
+        raise RuntimeError(f"Backward encoder ONNX has unknown inputs: {sorted(unknown)}")
     ort_z = ort_session.run(
         ["z"],
-        {
-            "state": example_state.numpy().astype(np.float32),
-            "last_action": example_last_action.numpy().astype(np.float32),
-            "privileged_state": example_privileged_state.numpy().astype(np.float32),
-        },
+        {name: candidate_inputs[name] for name in actual_input_names},
     )[0]
 
     max_abs = float(np.max(np.abs(torch_z - ort_z)))

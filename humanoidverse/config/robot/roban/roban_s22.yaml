@@ -156,10 +156,10 @@ robot:
       leg_r4_joint: 150.0984
       leg_r5_joint: 34.2506
       leg_r6_joint: 34.2506
-      zarm_l1_joint: 14.2506
-      zarm_l2_joint: 14.2506
-      zarm_l3_joint: 14.2506
-      zarm_l4_joint: 14.2506
+      zarm_l1_joint: 100.2506
+      zarm_l2_joint: 100.2506
+      zarm_l3_joint: 100.2506
+      zarm_l4_joint: 100.2506
       zarm_r1_joint: 14.2506
       zarm_r2_joint: 14.2506
       zarm_r3_joint: 14.2506
@@ -178,10 +178,10 @@ robot:
       leg_r4_joint: 8.3088
       leg_r5_joint: 2.9072
       leg_r6_joint: 2.9072
-      zarm_l1_joint: 1.9072
-      zarm_l2_joint: 1.9072
-      zarm_l3_joint: 1.9072
-      zarm_l4_joint: 1.9072
+      zarm_l1_joint: 10.9072
+      zarm_l2_joint: 10.9072
+      zarm_l3_joint: 10.9072
+      zarm_l4_joint: 10.9072
       zarm_r1_joint: 1.9072
       zarm_r2_joint: 1.9072
       zarm_r3_joint: 1.9072

@@ -52,8 +52,26 @@ export CUDA_CACHE_PATH="${CUDA_CACHE_PATH:-$UFO_CACHE_DIR/cuda}"
 export WARP_CACHE_PATH="${WARP_CACHE_PATH:-$UFO_CACHE_DIR/warp}"
 export NCCL_NVLS_ENABLE="${NCCL_NVLS_ENABLE:-0}"
 
-if [[ -n "${UFO_PYTHON:-}" ]]; then
-  exec "$UFO_PYTHON" -m humanoidverse.train "$@"
+train_args=("$@")
+has_data_manifest=false
+has_rebuild_motion_cache=false
+for arg in "${train_args[@]}"; do
+  case "$arg" in
+    --data-manifest|--data-manifest=*) has_data_manifest=true ;;
+    --rebuild-motion-cache) has_rebuild_motion_cache=true ;;
+  esac
+done
+
+# Manifest caches do not currently track source file additions, removals, or
+# edits.  Force a rebuild for every manifest-backed training launch so a stale
+# motion set can never be reused silently.
+if [[ "$has_data_manifest" == true && "$has_rebuild_motion_cache" == false ]]; then
+  train_args+=(--rebuild-motion-cache)
+  echo "[INFO] Enforcing --rebuild-motion-cache for manifest-backed training."
 fi
 
-exec uv run python -m humanoidverse.train "$@"
+if [[ -n "${UFO_PYTHON:-}" ]]; then
+  exec "$UFO_PYTHON" -m humanoidverse.train "${train_args[@]}"
+fi
+
+exec uv run python -m humanoidverse.train "${train_args[@]}"

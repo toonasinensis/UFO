@@ -1,0 +1,65 @@
+# Comment out this line, or set it to false, to disable this entire profile.
+enabled: true
+
+material:
+  geom_names: ".*"
+  friction_range: [0.3, 1.3]
+  restitution_range: [0.0, 0.3]
+
+joint_default_position:
+  range: [-0.03, 0.03]
+
+body_com:
+  base:
+    body_names: base_link
+    ranges:
+      x: [-0.05, 0.05]
+      y: [-0.05, 0.05]
+      z: [-0.05, 0.05]
+  waist:
+    body_names: waist_yaw_link
+    ranges:
+      x: [-0.05, 0.05]
+      y: [-0.05, 0.05]
+      z: [-0.01, 0.01]
+  limbs:
+    body_names: "leg_[lr][1-6]_link|zarm_[lr][1-4]_link"
+    ranges:
+      x: [-0.03, 0.03]
+      y: [-0.03, 0.03]
+      z: [-0.03, 0.03]
+
+body_mass:
+  base:
+    body_names: base_link
+    range: [0.8, 1.2]
+  waist:
+    body_names: waist_yaw_link
+    range: [0.8, 1.2]
+  limbs:
+    body_names: "leg_[lr][1-6]_link|zarm_[lr][1-4]_link"
+    range: [0.8, 1.2]
+
+actuator_gains:
+  actuator_names: ".*"
+  kp_range: [0.8, 1.2]
+  kd_range: [0.8, 1.2]
+
+joint_parameters:
+  joint_names: ".*_joint"
+  friction_range: [0.8, 1.2]
+  armature_range: [0.5, 1.5]
+
+control_delay:
+  # Units are MuJoCo physics simulation steps (5 ms at the current 200 Hz).
+  control_step_range: [0, 5]
+
+push:
+  interval_s: [1.0, 3.0]
+  velocity:
+    x: [-0.5, 0.5]
+    y: [-0.5, 0.5]
+    z: [-0.1, 0.1]
+    roll: [-0.26, 0.26]
+    pitch: [-0.26, 0.26]
+    yaw: [-0.39, 0.39]
