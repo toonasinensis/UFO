@@ -20,5 +20,5 @@ for folder in "${exclude_folders1[@]}"; do
 done
 
 # 执行 rsync 命令（指定端口 9765）
-rsync -avz $exclude_args -e "ssh -p 22" $local_path1 $remote_path1
+rsync -avz --delete --dry-run $exclude_args -e "ssh -p 22" $local_path1 $remote_path1
 #ssh 密码是Lejurobot2026

@@ -5,10 +5,10 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 cd "${SCRIPT_DIR}"
 
 PYTHON_BIN="${UFO_PYTHON:-.venv/bin/python}"
-MODEL_FOLDER="${UFO_ONNX_MODEL_FOLDER:-runs/新数据addlelay_onnx}"
-#/home/thl/wt_wbc/UFO/humanoidverse/data/roban/roban_npz/fallAndGetUp1_subject1.npz
+MODEL_FOLDER="${UFO_ONNX_MODEL_FOLDER:-runs/downloaded_latest_4gpu}"
+#/home/thl/wt_wbc/UFO/humanoidverse/data/roban/roban_npz/run2_subject4.npz
 #/home/thl/wt_wbc/soma-retargeter/external_data/lafan1/isaaclab_named/multipleActions1_subject1.isaaclab.named.npz
-MOTION_FILE="${UFO_ONNX_MOTION:-/home/thl/wt_wbc/soma-retargeter/external_data/lafan1/isaaclab_named/aiming1_subject1.isaaclab.named.npz}"
+MOTION_FILE="${UFO_ONNX_MOTION:-/home/thl/wt_wbc/UFO/data/roban_npz_2/roban_npz/dance1_subject2.roban_s22.fk50.npz}"
 ROBOT_CONFIG="${UFO_ONNX_ROBOT_CONFIG:-configs/robots/roban_s22.yaml}"
 LATENT_DEVICE="${UFO_ONNX_LATENT_DEVICE:-cpu}"
 REBUILD_LATENT="${UFO_ONNX_REBUILD_LATENT:-true}"

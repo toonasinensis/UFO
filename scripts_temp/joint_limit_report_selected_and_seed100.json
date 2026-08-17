@@ -1,0 +1,996 @@
+{
+  "xml": "/home/thl/wt_wbc/UFO/humanoidverse/data/robots/roban_s22_handball/roban_s22_handball/xml/biped_s17_verified_handball_fixedhead_no_massless.xml",
+  "tolerance_rad": 1e-06,
+  "archive_sample_seed": 4728,
+  "seed_archive_unnamed_order": "isaac_bfs",
+  "dataset": {
+    "source": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data",
+    "requested_files": 9289,
+    "checked_files": 9289,
+    "checked_frames": 3855293,
+    "invalid_file_count": 0,
+    "invalid_files": [],
+    "unnamed_files_reordered_from_assumed_order": 0,
+    "violating_files": 813,
+    "joints": {
+      "leg_l1_joint": {
+        "xml_limit_rad": [
+          -3.228,
+          2.44346
+        ],
+        "xml_limit_deg": [
+          -184.95077626822976,
+          139.99994540903614
+        ],
+        "observed_rad": [
+          -3.2279999256134033,
+          2.443459987640381
+        ],
+        "observed_deg": [
+          -184.9507720061917,
+          139.9999447008821
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 0.0,
+        "worst_excess_deg": 0.0,
+        "worst_file": ""
+      },
+      "leg_l2_joint": {
+        "xml_limit_rad": [
+          -0.837758,
+          2.40855
+        ],
+        "xml_limit_deg": [
+          -47.99999765332082,
+          137.99974974623441
+        ],
+        "observed_rad": [
+          -0.8377580642700195,
+          2.4085500240325928
+        ],
+        "observed_deg": [
+          -48.00000133572169,
+          137.99975112320055
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 6.427001952857836e-08,
+        "worst_excess_deg": 3.682400868210921e-06,
+        "worst_file": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data/crawl_220720_mohak_off_002__A032.npz"
+      },
+      "leg_l3_joint": {
+        "xml_limit_rad": [
+          -1.7453,
+          1.7453
+        ],
+        "xml_limit_deg": [
+          -99.99832398418258,
+          99.99832398418258
+        ],
+        "observed_rad": [
+          -1.745300054550171,
+          1.745300054550171
+        ],
+        "observed_deg": [
+          -99.99832710967715,
+          99.99832710967715
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 5.455017082489633e-08,
+        "worst_excess_deg": 3.125494559984236e-06,
+        "worst_file": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data/aiming1_subject1.roban_s22.fk50.npz"
+      },
+      "leg_l4_joint": {
+        "xml_limit_rad": [
+          -0.0872665,
+          2.53073
+        ],
+        "xml_limit_deg": [
+          -5.000002142878398,
+          145.00014808714283
+        ],
+        "observed_rad": [
+          -0.08726649731397629,
+          2.5307302474975586
+        ],
+        "observed_deg": [
+          -5.000001988980576,
+          145.00016226770836
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 2.474975584476624e-07,
+        "worst_excess_deg": 1.418056553884347e-05,
+        "worst_file": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data/crawl_230120_crawl_ff_loop_225_001__A132_M.npz"
+      },
+      "leg_l5_joint": {
+        "xml_limit_rad": [
+          -0.872665,
+          0.523599
+        ],
+        "xml_limit_deg": [
+          -50.00002142878399,
+          30.000012857270395
+        ],
+        "observed_rad": [
+          -0.8726650476455688,
+          0.5235990285873413
+        ],
+        "observed_deg": [
+          -50.000024158673995,
+          30.000014495204397
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 4.7645568823639906e-08,
+        "worst_excess_deg": 2.7298900060946613e-06,
+        "worst_file": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data/crawl_230119_crawl_ff_start_180_R_001__A127_M.npz"
+      },
+      "leg_l6_joint": {
+        "xml_limit_rad": [
+          -0.261799,
+          0.261799
+        ],
+        "xml_limit_deg": [
+          -14.99997778074544,
+          14.99997778074544
+        ],
+        "observed_rad": [
+          -0.26179900765419006,
+          0.26179900765419006
+        ],
+        "observed_deg": [
+          -14.999978219298225,
+          14.999978219298225
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 7.654190059547261e-09,
+        "worst_excess_deg": 4.385527860030463e-07,
+        "worst_file": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data/aiming1_subject1.roban_s22.fk50.npz"
+      },
+      "leg_r1_joint": {
+        "xml_limit_rad": [
+          -2.44346,
+          3.228
+        ],
+        "xml_limit_deg": [
+          -139.99994540903614,
+          184.95077626822976
+        ],
+        "observed_rad": [
+          -2.5863842964172363,
+          3.2279999256134033
+        ],
+        "observed_deg": [
+          -148.18890438362052,
+          184.9507720061917
+        ],
+        "violation_frames": 33,
+        "violation_files": 1,
+        "worst_excess_rad": 0.14292429641723636,
+        "worst_excess_deg": 8.188958974584397,
+        "worst_file": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data/crawl_230301_crawl_ff_start_315_R_001__A233.npz"
+      },
+      "leg_r2_joint": {
+        "xml_limit_rad": [
+          -2.40855,
+          0.837758
+        ],
+        "xml_limit_deg": [
+          -137.99974974623441,
+          47.99999765332082
+        ],
+        "observed_rad": [
+          -2.4085500240325928,
+          0.8377580642700195
+        ],
+        "observed_deg": [
+          -137.99975112320055,
+          48.00000133572169
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 6.427001952857836e-08,
+        "worst_excess_deg": 3.682400868210921e-06,
+        "worst_file": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data/crawl_220720_mohak_off_002__A032_M.npz"
+      },
+      "leg_r3_joint": {
+        "xml_limit_rad": [
+          -1.7453,
+          1.7453
+        ],
+        "xml_limit_deg": [
+          -99.99832398418258,
+          99.99832398418258
+        ],
+        "observed_rad": [
+          -1.745300054550171,
+          1.745300054550171
+        ],
+        "observed_deg": [
+          -99.99832710967715,
+          99.99832710967715
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 5.455017082489633e-08,
+        "worst_excess_deg": 3.125494559984236e-06,
+        "worst_file": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data/aiming1_subject4.roban_s22.fk50.npz"
+      },
+      "leg_r4_joint": {
+        "xml_limit_rad": [
+          -0.0872665,
+          2.53073
+        ],
+        "xml_limit_deg": [
+          -5.000002142878398,
+          145.00014808714283
+        ],
+        "observed_rad": [
+          -0.08726649731397629,
+          2.5307302474975586
+        ],
+        "observed_deg": [
+          -5.000001988980576,
+          145.00016226770836
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 2.474975584476624e-07,
+        "worst_excess_deg": 1.418056553884347e-05,
+        "worst_file": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data/crawl_230120_crawl_ff_loop_225_001__A132_M.npz"
+      },
+      "leg_r5_joint": {
+        "xml_limit_rad": [
+          -0.872665,
+          0.523599
+        ],
+        "xml_limit_deg": [
+          -50.00002142878399,
+          30.000012857270395
+        ],
+        "observed_rad": [
+          -0.8726650476455688,
+          0.5235990285873413
+        ],
+        "observed_deg": [
+          -50.000024158673995,
+          30.000014495204397
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 4.7645568823639906e-08,
+        "worst_excess_deg": 2.7298900060946613e-06,
+        "worst_file": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data/crawl_230119_crawl_ff_loop_180_R_005__A127.npz"
+      },
+      "leg_r6_joint": {
+        "xml_limit_rad": [
+          -0.261799,
+          0.261799
+        ],
+        "xml_limit_deg": [
+          -14.99997778074544,
+          14.99997778074544
+        ],
+        "observed_rad": [
+          -0.26179900765419006,
+          0.26179900765419006
+        ],
+        "observed_deg": [
+          -14.999978219298225,
+          14.999978219298225
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 7.654190059547261e-09,
+        "worst_excess_deg": 4.385527860030463e-07,
+        "worst_file": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data/aiming1_subject1.roban_s22.fk50.npz"
+      },
+      "waist_yaw_joint": {
+        "xml_limit_rad": [
+          -2.61799,
+          2.61799
+        ],
+        "xml_limit_deg": [
+          -149.9997778074544,
+          149.9997778074544
+        ],
+        "observed_rad": [
+          -1.5450670719146729,
+          1.5598256587982178
+        ],
+        "observed_deg": [
+          -88.5258222853468,
+          89.37142702535107
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 0.0,
+        "worst_excess_deg": 0.0,
+        "worst_file": ""
+      },
+      "zarm_l1_joint": {
+        "xml_limit_rad": [
+          -3.14159,
+          2.0944
+        ],
+        "xml_limit_deg": [
+          -179.9998479605043,
+          120.0002806121996
+        ],
+        "observed_rad": [
+          -3.141590118408203,
+          2.094399929046631
+        ],
+        "observed_deg": [
+          -179.9998547447946,
+          120.00027654687102
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 1.1840820324238166e-07,
+        "worst_excess_deg": 6.784290305515739e-06,
+        "worst_file": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data/aiming1_subject4.roban_s22.fk50.npz"
+      },
+      "zarm_l2_joint": {
+        "xml_limit_rad": [
+          -0.52,
+          3.316
+        ],
+        "xml_limit_deg": [
+          -29.79380534680281,
+          189.99280486538098
+        ],
+        "observed_rad": [
+          -0.5199999809265137,
+          3.315999984741211
+        ],
+        "observed_deg": [
+          -29.793804253972542,
+          189.99280399111677
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 0.0,
+        "worst_excess_deg": 0.0,
+        "worst_file": ""
+      },
+      "zarm_l3_joint": {
+        "xml_limit_rad": [
+          -1.5708,
+          1.5708
+        ],
+        "xml_limit_deg": [
+          -90.00021045914971,
+          90.00021045914971
+        ],
+        "observed_rad": [
+          -1.5708000659942627,
+          1.5707999467849731
+        ],
+        "observed_deg": [
+          -90.00021424034244,
+          90.00020741015327
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 6.599426272124731e-08,
+        "worst_excess_deg": 3.781192726005014e-06,
+        "worst_file": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data/crawl_230118_mohak_backward_start_003__A123.npz"
+      },
+      "zarm_l4_joint": {
+        "xml_limit_rad": [
+          -2.26893,
+          0.08726
+        ],
+        "xml_limit_deg": [
+          -130.0001130106179,
+          4.999629720311564
+        ],
+        "observed_rad": [
+          -2.268929958343506,
+          0.08726000785827637
+        ],
+        "observed_deg": [
+          -130.00011062387657,
+          4.999630170557634
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 7.85827636295977e-09,
+        "worst_excess_deg": 4.502460698450095e-07,
+        "worst_file": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data/kneel_230413_dance_vouge_go_up_4_step_R_002__A320_M.npz"
+      },
+      "zarm_r1_joint": {
+        "xml_limit_rad": [
+          -3.14159,
+          2.0944
+        ],
+        "xml_limit_deg": [
+          -179.9998479605043,
+          120.0002806121996
+        ],
+        "observed_rad": [
+          -3.141590118408203,
+          2.094399929046631
+        ],
+        "observed_deg": [
+          -179.9998547447946,
+          120.00027654687102
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 1.1840820324238166e-07,
+        "worst_excess_deg": 6.784290305515739e-06,
+        "worst_file": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data/aiming1_subject4.roban_s22.fk50.npz"
+      },
+      "zarm_r2_joint": {
+        "xml_limit_rad": [
+          -3.3161,
+          0.52
+        ],
+        "xml_limit_deg": [
+          -189.9985344433323,
+          29.79380534680281
+        ],
+        "observed_rad": [
+          -3.3160998821258545,
+          0.5199999809265137
+        ],
+        "observed_deg": [
+          -189.99852768964124,
+          29.793804253972542
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 0.0,
+        "worst_excess_deg": 0.0,
+        "worst_file": ""
+      },
+      "zarm_r3_joint": {
+        "xml_limit_rad": [
+          -1.5708,
+          1.5708
+        ],
+        "xml_limit_deg": [
+          -90.00021045914971,
+          90.00021045914971
+        ],
+        "observed_rad": [
+          -1.736013650894165,
+          1.5708000659942627
+        ],
+        "observed_deg": [
+          -99.46625537333315,
+          90.00021424034244
+        ],
+        "violation_frames": 2585,
+        "violation_files": 193,
+        "worst_excess_rad": 0.16521365089416506,
+        "worst_excess_deg": 9.466044914183438,
+        "worst_file": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data/main_231006_dance_drippin_flavor_005__A466_M.npz"
+      },
+      "zarm_r4_joint": {
+        "xml_limit_rad": [
+          -2.26893,
+          0.08726
+        ],
+        "xml_limit_deg": [
+          -130.0001130106179,
+          4.999629720311564
+        ],
+        "observed_rad": [
+          -2.268929958343506,
+          0.2167302668094635
+        ],
+        "observed_deg": [
+          -130.00011062387657,
+          12.417729580926524
+        ],
+        "violation_frames": 8362,
+        "violation_files": 686,
+        "worst_excess_rad": 0.1294702668094635,
+        "worst_excess_deg": 7.418099860614961,
+        "worst_file": "/home/thl/wt_wbc/UFO/data/selected_raw_my_data/main_231006_dance_get_gone_005__A464.npz"
+      }
+    }
+  },
+  "seed_archive_sample": {
+    "source": "/home/thl/seed_data",
+    "requested_files": 100,
+    "checked_files": 100,
+    "checked_frames": 36383,
+    "invalid_file_count": 0,
+    "invalid_files": [],
+    "unnamed_files_reordered_from_assumed_order": 100,
+    "violating_files": 3,
+    "joints": {
+      "leg_l1_joint": {
+        "xml_limit_rad": [
+          -3.228,
+          2.44346
+        ],
+        "xml_limit_deg": [
+          -184.95077626822976,
+          139.99994540903614
+        ],
+        "observed_rad": [
+          -2.7984089851379395,
+          0.8292433023452759
+        ],
+        "observed_deg": [
+          -160.33702419989186,
+          47.51214141387519
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 0.0,
+        "worst_excess_deg": 0.0,
+        "worst_file": ""
+      },
+      "leg_l2_joint": {
+        "xml_limit_rad": [
+          -0.837758,
+          2.40855
+        ],
+        "xml_limit_deg": [
+          -47.99999765332082,
+          137.99974974623441
+        ],
+        "observed_rad": [
+          -0.8377580642700195,
+          0.736690878868103
+        ],
+        "observed_deg": [
+          -48.00000133572169,
+          42.20927816492567
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 6.427001952857836e-08,
+        "worst_excess_deg": 3.682400868210921e-06,
+        "worst_file": "omini_passed_npz_train/squat/240918/h_b_w_crouch_270_start_004__A550.npz"
+      },
+      "leg_l3_joint": {
+        "xml_limit_rad": [
+          -1.7453,
+          1.7453
+        ],
+        "xml_limit_deg": [
+          -99.99832398418258,
+          99.99832398418258
+        ],
+        "observed_rad": [
+          -1.3492684364318848,
+          1.4097068309783936
+        ],
+        "observed_deg": [
+          -77.3073868377626,
+          80.77025176582404
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 0.0,
+        "worst_excess_deg": 0.0,
+        "worst_file": ""
+      },
+      "leg_l4_joint": {
+        "xml_limit_rad": [
+          -0.0872665,
+          2.53073
+        ],
+        "xml_limit_deg": [
+          -5.000002142878398,
+          145.00014808714283
+        ],
+        "observed_rad": [
+          0.21058569848537445,
+          2.5307300090789795
+        ],
+        "observed_deg": [
+          12.065671749026448,
+          145.00014860733003
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 9.078979346099914e-09,
+        "worst_excess_deg": 5.20187198817969e-07,
+        "worst_file": "omini_passed_npz_train/squat/230420/h_b_w_crouch_to_stand_270_stop_003__A343_M.npz"
+      },
+      "leg_l5_joint": {
+        "xml_limit_rad": [
+          -0.872665,
+          0.523599
+        ],
+        "xml_limit_deg": [
+          -50.00002142878399,
+          30.000012857270395
+        ],
+        "observed_rad": [
+          -0.8726650476455688,
+          0.5235990285873413
+        ],
+        "observed_deg": [
+          -50.000024158673995,
+          30.000014495204397
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 4.7645568823639906e-08,
+        "worst_excess_deg": 2.7298900060946613e-06,
+        "worst_file": "omini_passed_npz_train/squat/230420/h_b_w_crouch_to_stand_270_stop_003__A343_M.npz"
+      },
+      "leg_l6_joint": {
+        "xml_limit_rad": [
+          -0.261799,
+          0.261799
+        ],
+        "xml_limit_deg": [
+          -14.99997778074544,
+          14.99997778074544
+        ],
+        "observed_rad": [
+          -0.26179900765419006,
+          0.26179900765419006
+        ],
+        "observed_deg": [
+          -14.999978219298225,
+          14.999978219298225
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 7.654190059547261e-09,
+        "worst_excess_deg": 4.385527860030463e-07,
+        "worst_file": "omini_passed_npz_train/main/230216/lift_crate_turn_360_002__A199_M.npz"
+      },
+      "leg_r1_joint": {
+        "xml_limit_rad": [
+          -2.44346,
+          3.228
+        ],
+        "xml_limit_deg": [
+          -139.99994540903614,
+          184.95077626822976
+        ],
+        "observed_rad": [
+          -0.8095534443855286,
+          2.624180793762207
+        ],
+        "observed_deg": [
+          -46.3839956535696,
+          150.35448416186478
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 0.0,
+        "worst_excess_deg": 0.0,
+        "worst_file": ""
+      },
+      "leg_r2_joint": {
+        "xml_limit_rad": [
+          -2.40855,
+          0.837758
+        ],
+        "xml_limit_deg": [
+          -137.99974974623441,
+          47.99999765332082
+        ],
+        "observed_rad": [
+          -0.6582236289978027,
+          0.8377580642700195
+        ],
+        "observed_deg": [
+          -37.71343591735901,
+          48.00000133572169
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 6.427001952857836e-08,
+        "worst_excess_deg": 3.682400868210921e-06,
+        "worst_file": "omini_passed_npz_train/squat/230420/h_b_w_crouch_to_stand_270_stop_003__A343_M.npz"
+      },
+      "leg_r3_joint": {
+        "xml_limit_rad": [
+          -1.7453,
+          1.7453
+        ],
+        "xml_limit_deg": [
+          -99.99832398418258,
+          99.99832398418258
+        ],
+        "observed_rad": [
+          -1.6394513845443726,
+          1.5992318391799927
+        ],
+        "observed_deg": [
+          -93.93364505127191,
+          91.62923484795799
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 0.0,
+        "worst_excess_deg": 0.0,
+        "worst_file": ""
+      },
+      "leg_r4_joint": {
+        "xml_limit_rad": [
+          -0.0872665,
+          2.53073
+        ],
+        "xml_limit_deg": [
+          -5.000002142878398,
+          145.00014808714283
+        ],
+        "observed_rad": [
+          0.21954792737960815,
+          2.5307300090789795
+        ],
+        "observed_deg": [
+          12.57916963969624,
+          145.00014860733003
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 9.078979346099914e-09,
+        "worst_excess_deg": 5.20187198817969e-07,
+        "worst_file": "omini_passed_npz_train/squat/230420/h_b_w_crouch_to_stand_270_stop_003__A343_M.npz"
+      },
+      "leg_r5_joint": {
+        "xml_limit_rad": [
+          -0.872665,
+          0.523599
+        ],
+        "xml_limit_deg": [
+          -50.00002142878399,
+          30.000012857270395
+        ],
+        "observed_rad": [
+          -0.8726650476455688,
+          0.5066604018211365
+        ],
+        "observed_deg": [
+          -50.000024158673995,
+          29.02950267075353
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 4.7645568823639906e-08,
+        "worst_excess_deg": 2.7298900060946613e-06,
+        "worst_file": "omini_passed_npz_train/squat/230420/h_b_w_crouch_to_stand_270_stop_003__A343_M.npz"
+      },
+      "leg_r6_joint": {
+        "xml_limit_rad": [
+          -0.261799,
+          0.261799
+        ],
+        "xml_limit_deg": [
+          -14.99997778074544,
+          14.99997778074544
+        ],
+        "observed_rad": [
+          -0.26179900765419006,
+          0.26179900765419006
+        ],
+        "observed_deg": [
+          -14.999978219298225,
+          14.999978219298225
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 7.654190059547261e-09,
+        "worst_excess_deg": 4.385527860030463e-07,
+        "worst_file": "omini_passed_npz_train/main/220713/jog_sideway_090_loop_003__A022_M.npz"
+      },
+      "waist_yaw_joint": {
+        "xml_limit_rad": [
+          -2.61799,
+          2.61799
+        ],
+        "xml_limit_deg": [
+          -149.9997778074544,
+          149.9997778074544
+        ],
+        "observed_rad": [
+          -0.7804815769195557,
+          1.505375623703003
+        ],
+        "observed_deg": [
+          -44.71830034520566,
+          86.25166982005604
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 0.0,
+        "worst_excess_deg": 0.0,
+        "worst_file": ""
+      },
+      "zarm_l1_joint": {
+        "xml_limit_rad": [
+          -3.14159,
+          2.0944
+        ],
+        "xml_limit_deg": [
+          -179.9998479605043,
+          120.0002806121996
+        ],
+        "observed_rad": [
+          -2.6002566814422607,
+          1.5071864128112793
+        ],
+        "observed_deg": [
+          -148.98373349733492,
+          86.35542039354853
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 0.0,
+        "worst_excess_deg": 0.0,
+        "worst_file": ""
+      },
+      "zarm_l2_joint": {
+        "xml_limit_rad": [
+          -0.52,
+          3.316
+        ],
+        "xml_limit_deg": [
+          -29.79380534680281,
+          189.99280486538098
+        ],
+        "observed_rad": [
+          -0.13641667366027832,
+          2.753530263900757
+        ],
+        "observed_deg": [
+          -7.816099655947411,
+          157.76566288305713
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 0.0,
+        "worst_excess_deg": 0.0,
+        "worst_file": ""
+      },
+      "zarm_l3_joint": {
+        "xml_limit_rad": [
+          -1.5708,
+          1.5708
+        ],
+        "xml_limit_deg": [
+          -90.00021045914971,
+          90.00021045914971
+        ],
+        "observed_rad": [
+          -1.5707999467849731,
+          1.3687549829483032
+        ],
+        "observed_deg": [
+          -90.00020741015327,
+          78.42388371043873
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 0.0,
+        "worst_excess_deg": 0.0,
+        "worst_file": ""
+      },
+      "zarm_l4_joint": {
+        "xml_limit_rad": [
+          -2.26893,
+          0.08726
+        ],
+        "xml_limit_deg": [
+          -130.0001130106179,
+          4.999629720311564
+        ],
+        "observed_rad": [
+          -2.268929958343506,
+          0.08726000040769577
+        ],
+        "observed_deg": [
+          -130.00011062387657,
+          4.999629743670811
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 4.076957660359426e-10,
+        "worst_excess_deg": 2.3359246719212565e-08,
+        "worst_file": "omini_passed_npz_train/main/230411/victory_dance_wednesday_dance_R_004__A310.npz"
+      },
+      "zarm_r1_joint": {
+        "xml_limit_rad": [
+          -3.14159,
+          2.0944
+        ],
+        "xml_limit_deg": [
+          -179.9998479605043,
+          120.0002806121996
+        ],
+        "observed_rad": [
+          -2.562065601348877,
+          1.5009130239486694
+        ],
+        "observed_deg": [
+          -146.79554579293793,
+          85.99598168847662
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 0.0,
+        "worst_excess_deg": 0.0,
+        "worst_file": ""
+      },
+      "zarm_r2_joint": {
+        "xml_limit_rad": [
+          -3.3161,
+          0.52
+        ],
+        "xml_limit_deg": [
+          -189.9985344433323,
+          29.79380534680281
+        ],
+        "observed_rad": [
+          -2.1854021549224854,
+          0.12151569128036499
+        ],
+        "observed_deg": [
+          -125.2143200158537,
+          6.962336254979573
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 0.0,
+        "worst_excess_deg": 0.0,
+        "worst_file": ""
+      },
+      "zarm_r3_joint": {
+        "xml_limit_rad": [
+          -1.5708,
+          1.5708
+        ],
+        "xml_limit_deg": [
+          -90.00021045914971,
+          90.00021045914971
+        ],
+        "observed_rad": [
+          -1.3347102403640747,
+          1.5707999467849731
+        ],
+        "observed_deg": [
+          -76.47326364575314,
+          90.00020741015327
+        ],
+        "violation_frames": 0,
+        "violation_files": 0,
+        "worst_excess_rad": 0.0,
+        "worst_excess_deg": 0.0,
+        "worst_file": ""
+      },
+      "zarm_r4_joint": {
+        "xml_limit_rad": [
+          -2.26893,
+          0.08726
+        ],
+        "xml_limit_deg": [
+          -130.0001130106179,
+          4.999629720311564
+        ],
+        "observed_rad": [
+          -1.5708000659942627,
+          0.10108324140310287
+        ],
+        "observed_deg": [
+          -90.00021424034244,
+          5.791643111899856
+        ],
+        "violation_frames": 26,
+        "violation_files": 3,
+        "worst_excess_rad": 0.01382324140310287,
+        "worst_excess_deg": 0.7920133915882928,
+        "worst_file": "omini_passed_npz_train/jump/reach_jump_R_001__A283_M.npz"
+      }
+    }
+  }
+}

@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import tempfile
@@ -19,17 +18,28 @@ from humanoidverse.utils.motion_data import (
     prepare_manifest_robot_config_path,
 )
 
-
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_ROBOT_CONFIG = ROOT / "configs/robots/roban_s22.yaml"
 
 
-def _sha256(path: Path) -> str:
-    digest = hashlib.sha256()
-    with path.open("rb") as stream:
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()
+def _train_aligned_latents(frame_z: np.ndarray, seq_length: int) -> np.ndarray:
+    """Match FB expert tracking: future-window mean followed by z projection."""
+    if frame_z.ndim != 2 or len(frame_z) == 0:
+        raise ValueError(f"Expected non-empty [frames, z_dim] latent, got {frame_z.shape}")
+    if seq_length <= 0:
+        raise ValueError(f"seq_length must be positive, got {seq_length}")
+
+    aligned = np.empty_like(frame_z, dtype=np.float32)
+    for step in range(len(frame_z)):
+        end = min(step + seq_length, len(frame_z))
+        aligned[step] = frame_z[step:end].mean(axis=0, dtype=np.float32)
+
+    # FBModel.project_z(): sqrt(z_dim) * normalize(z). The backward ONNX
+    # already projects each frame; applying this after the window mean matches
+    # the training-time expert/tracking aggregation order for this export.
+    norms = np.linalg.norm(aligned, axis=1, keepdims=True)
+    aligned *= np.sqrt(aligned.shape[1], dtype=np.float32) / np.maximum(norms, 1.0e-12)
+    return np.ascontiguousarray(aligned, dtype=np.float32)
 
 
 def _ordered(values, joint_names: list[str], label: str) -> list[float]:
@@ -74,9 +84,11 @@ def _prepare_motion_input(
     if not robot_config.is_file():
         raise FileNotFoundError(f"Robot config does not exist: {robot_config}")
 
-    # Include the content digest in the cache key. Replacing an NPZ in place
-    # therefore cannot silently reuse a latent/cache produced from old bytes.
-    dataset_name = f"single_motion_{_sha256(motion_path)[:16]}"
+    # Keep direct-motion caches distinct without coupling runtime inference to
+    # file-content hashes. Size and mtime also invalidate normal replacements.
+    motion_stat = motion_path.stat()
+    safe_stem = "".join(char if char.isalnum() else "_" for char in motion_path.stem)
+    dataset_name = f"single_motion_{safe_stem}_{motion_stat.st_size}_{motion_stat.st_mtime_ns}"
     cache_root = model_folder / "tracking_inference" / "motion_cache"
     manifest_data = {
         "robot_config": str(robot_config),
@@ -124,6 +136,18 @@ def main() -> None:
     parser.add_argument("--device", default="cuda:0")
     parser.add_argument("--output", type=Path, default=None)
     parser.add_argument("--metadata-output", type=Path, default=None)
+    parser.add_argument(
+        "--latent-mode",
+        choices=("single_frame", "train_aligned"),
+        default="single_frame",
+        help="single_frame preserves the old per-frame z; train_aligned uses the training seq_length future window.",
+    )
+    parser.add_argument(
+        "--seq-length",
+        type=int,
+        default=None,
+        help="Override training model.seq_length for train_aligned mode.",
+    )
     parser.add_argument("--rebuild-motion-cache", action="store_true")
     args = parser.parse_args()
     if args.motion is None and (args.data_manifest is None or args.dataset is None):
@@ -175,9 +199,23 @@ def main() -> None:
     unknown = input_names.difference(candidate_inputs)
     if unknown:
         raise RuntimeError(f"Backward ONNX has unsupported inputs: {sorted(unknown)}")
-    z = session.run(["z"], {name: candidate_inputs[name] for name in input_names})[0]
-    if z.ndim != 2 or not np.isfinite(z).all():
-        raise ValueError(f"Invalid latent generated from {backward_path}: shape={z.shape}")
+    frame_z = session.run(["z"], {name: candidate_inputs[name] for name in input_names})[0]
+    if frame_z.ndim != 2 or not np.isfinite(frame_z).all():
+        raise ValueError(f"Invalid latent generated from {backward_path}: shape={frame_z.shape}")
+
+    run_config_path = model_folder / "config.json"
+    if not run_config_path.is_file():
+        raise FileNotFoundError(f"Missing runtime input: {run_config_path}")
+    run_config = json.loads(run_config_path.read_text(encoding="utf-8"))
+    training_seq_length = int(run_config["agent"]["model"]["seq_length"])
+    seq_length = training_seq_length if args.seq_length is None else int(args.seq_length)
+    if seq_length <= 0:
+        parser.error("--seq-length must be positive")
+    z = (
+        _train_aligned_latents(frame_z, seq_length)
+        if args.latent_mode == "train_aligned"
+        else np.ascontiguousarray(frame_z, dtype=np.float32)
+    )
 
     output = (
         model_folder / "tracking_inference" / f"zs_{args.motion_id}.npy"
@@ -197,24 +235,67 @@ def main() -> None:
     )
     export_meta_path = model_folder / "exported" / "FBcprAuxModel.meta.json"
     actor_path = model_folder / "exported" / "FBcprAuxModel.onnx"
-    run_config_path = model_folder / "config.json"
     for required in (export_meta_path, actor_path, run_config_path):
         if not required.is_file():
             raise FileNotFoundError(f"Missing runtime input: {required}")
     export_meta = json.loads(export_meta_path.read_text(encoding="utf-8"))
-    run_config = json.loads(run_config_path.read_text(encoding="utf-8"))
     robot_training = run_config["env"]["robot_training"]
     joint_names = [str(name) for name in export_meta["control_joint_names"]]
     if len(joint_names) != 21:
         raise ValueError(f"Expected 21 control joints, got {len(joint_names)}")
+    env_joint_names = [str(name) for name in env.dof_names]
+    if env_joint_names != joint_names:
+        raise ValueError(
+            "Runtime environment and Actor export joint orders differ: "
+            f"env={env_joint_names}, actor={joint_names}"
+        )
     kp = np.asarray(_ordered(robot_training["stiffness"], joint_names, "stiffness"))
     kd = np.asarray(_ordered(robot_training["damping"], joint_names, "damping"))
     effort = np.asarray(_ordered(robot_training["effort_limits"], joint_names, "effort_limits"))
-    default_joint_pos = _ordered(
-        robot_training["default_joint_angles"], joint_names, "default_joint_angles"
+
+    # Read the action transform from the fully composed training environment.
+    # In particular, soft_limit_bias depends on the resolved reward soft-limit
+    # factor and joint limits, so recomputing it from the deployment YAML can
+    # silently diverge from training.
+    default_joint_pos = (
+        env.default_dof_pos[0].detach().cpu().numpy().astype(np.float64)
     )
-    action_scale = float(robot_training["action_scale"])
-    target_scales = (action_scale * effort / kp).tolist()
+    target_scales = (
+        env.action_target_scale[0].detach().cpu().numpy().astype(np.float64)
+    )
+    action_mapping = str(env.action_mapping)
+    action_mapping_bias = (
+        env.action_mapping_bias.detach().cpu().numpy().astype(np.float64)
+    )
+    action_mapping_range = (
+        env.action_mapping_range.detach().cpu().numpy().astype(np.float64)
+    )
+    action_mapping_lower = (
+        env.action_mapping_lower.detach().cpu().numpy().astype(np.float64)
+    )
+    action_mapping_upper = (
+        env.action_mapping_upper.detach().cpu().numpy().astype(np.float64)
+    )
+    soft_joint_limits = env.dof_pos_limits.detach().cpu().numpy().astype(np.float64)
+    expected_vector_shape = (len(joint_names),)
+    for label, values in (
+        ("default_joint_pos", default_joint_pos),
+        ("target_scales", target_scales),
+        ("action_mapping_bias", action_mapping_bias),
+        ("action_mapping_range", action_mapping_range),
+        ("action_mapping_lower", action_mapping_lower),
+        ("action_mapping_upper", action_mapping_upper),
+    ):
+        if values.shape != expected_vector_shape or not np.isfinite(values).all():
+            raise ValueError(
+                f"Invalid {label} from runtime environment: "
+                f"shape={values.shape}, expected={expected_vector_shape}"
+            )
+    if soft_joint_limits.shape != (len(joint_names), 2) or not np.isfinite(soft_joint_limits).all():
+        raise ValueError(
+            "Invalid soft joint limits from runtime environment: "
+            f"shape={soft_joint_limits.shape}"
+        )
     reference_state = backward_obs["state"].detach().cpu().numpy().astype(np.float32)
     if reference_state.ndim != 2 or reference_state.shape[1] < len(joint_names):
         raise ValueError(f"Invalid reference state shape: {reference_state.shape}")
@@ -245,16 +326,18 @@ def main() -> None:
         "format": "ufo_precomputed_onnx_latent",
         "actor": {
             "file": _relative_path(actor_path, metadata_output.parent),
-            "sha256": _sha256(actor_path),
             "input_dim": int(export_meta["actor_obs_dim"]),
             "output_dim": int(export_meta["output_action_dim"]),
         },
         "latent": {
             "file": _relative_path(output, metadata_output.parent),
-            "sha256": _sha256(output),
             "dtype": "float32",
             "shape": [int(z.shape[0]), int(z.shape[1])],
             "frame_offset": 1,
+            "mode": args.latent_mode,
+            "aggregation": "future_window_mean" if args.latent_mode == "train_aligned" else "single_frame",
+            "seq_length": seq_length if args.latent_mode == "train_aligned" else 1,
+            "training_seq_length": training_seq_length,
         },
         "motion": {
             "id": int(args.motion_id),
@@ -272,13 +355,19 @@ def main() -> None:
         "control": {
             "dt": 0.02,
             "joint_names": joint_names,
-            "default_joint_pos": default_joint_pos,
+            "default_joint_pos": default_joint_pos.tolist(),
             "p_gains": kp.tolist(),
             "d_gains": kd.tolist(),
             "effort_limits": effort.tolist(),
-            "target_scales": target_scales,
+            "target_scales": target_scales.tolist(),
             "action_clip": float(robot_training["action_clip_value"]),
             "action_obs_scale": float(robot_training["normalize_action_to"]),
+            "action_mapping": action_mapping,
+            "action_mapping_bias": action_mapping_bias.tolist(),
+            "action_mapping_range": action_mapping_range.tolist(),
+            "action_mapping_lower": action_mapping_lower.tolist(),
+            "action_mapping_upper": action_mapping_upper.tolist(),
+            "soft_joint_limits": soft_joint_limits.tolist(),
             "base_ang_vel_obs_scale": 0.25,
             "history_length": 4,
         },
@@ -288,7 +377,6 @@ def main() -> None:
             "dataset": source_dataset,
             "motion_key": motion_key,
             "motion_file": str(direct_motion_path) if direct_motion_path is not None else None,
-            "motion_sha256": _sha256(direct_motion_path) if direct_motion_path is not None else None,
         },
     }
     metadata_output.parent.mkdir(parents=True, exist_ok=True)
@@ -297,7 +385,11 @@ def main() -> None:
     )
     print(f"[INFO] Saved ONNX latent: {output}")
     print(f"[INFO] Saved runtime metadata: {metadata_output}")
-    print(f"[INFO] motion_id={args.motion_id} shape={z.shape} provider={session.get_providers()[0]}")
+    print(
+        f"[INFO] motion_id={args.motion_id} shape={z.shape} mode={args.latent_mode} "
+        f"seq_length={seq_length if args.latent_mode == 'train_aligned' else 1} "
+        f"provider={session.get_providers()[0]}"
+    )
 
 
 if __name__ == "__main__":

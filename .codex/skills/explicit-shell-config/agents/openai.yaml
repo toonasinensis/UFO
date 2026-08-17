@@ -1,0 +1,4 @@
+interface:
+  display_name: "Explicit Shell Config"
+  short_description: "Keep runnable shell parameters explicit and editable"
+  default_prompt: "Use $explicit-shell-config to create a directly editable runnable shell script."

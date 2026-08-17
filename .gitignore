@@ -15,6 +15,16 @@ cache/
 checkpoint/
 tea_debug.log
 *.log
+*.npy
+*.onnx
+*.pt
+events.out.tfevents.*
+
+# Local datasets and generated experiment artifacts
+data/*.zip
+humanoidverse/data/**/*.zip
+experiments/.stop_after_smoke.*/
+experiments/bfm_trajectory_adaptation/outputs/
 
 # OS/editor
 .DS_Store
@@ -23,6 +33,10 @@ tea_debug.log
 # Generated inference media
 model/
 *.npz
+
+experiments/bfm_lateral_latent_search/outputs/*
+experiments/bfm_trajectory_latent_adaptation/outputs/*
+tests/*
 # Downloaded public motion data
 humanoidverse/data/lafan_29dof_10s-clipped.pkl
 humanoidverse/data/lafan_29dof.pkl

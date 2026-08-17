@@ -9,13 +9,14 @@ import copy
 import dataclasses
 import functools
 import inspect
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from typing import Any
 
 import mujoco
 import numpy as np
 import torch
 from torch.utils._pytree import tree_map
+from tqdm import tqdm
 
 from humanoidverse.agents.buffers.trajectory import TrajectoryDictBufferMultiDim
 from humanoidverse.envs.g1_env_helper import rewards as g1_rewards
@@ -214,11 +215,26 @@ def relabel(
     max_workers: int = 5,
     process_executor: bool = False,
     process_context: str = "spawn",
+    show_progress: bool = False,
+    progress_desc: str = "Reward relabel",
 ):
-    chunk_size = int(np.ceil(qpos.shape[0] / max_workers))
+    if max_workers <= 0:
+        raise ValueError(f"max_workers must be positive, got {max_workers}")
+    num_chunks = min(qpos.shape[0], max(max_workers, max_workers * 4 if show_progress else max_workers))
+    chunk_size = int(np.ceil(qpos.shape[0] / num_chunks))
     args = [(qpos[i : i + chunk_size], qvel[i : i + chunk_size], action[i : i + chunk_size]) for i in range(0, qpos.shape[0], chunk_size)]
+    results: list[np.ndarray | None] = [None] * len(args)
+    progress = tqdm(
+        total=qpos.shape[0],
+        desc=progress_desc,
+        unit="samples",
+        dynamic_ncols=True,
+        disable=not show_progress,
+    )
     if max_workers == 1:
-        result = [_relabel_worker(args[0], model=model, reward_fn=reward_fn)]
+        for index, chunk in enumerate(args):
+            results[index] = _relabel_worker(chunk, model=model, reward_fn=reward_fn)
+            progress.update(len(results[index]))
     elif process_executor:
         import multiprocessing
 
@@ -227,10 +243,22 @@ def relabel(
             mp_context=multiprocessing.get_context(process_context),
         ) as exe:
             f = functools.partial(_relabel_worker, model=model, reward_fn=reward_fn)
-            result = exe.map(f, args)
+            futures = {exe.submit(f, chunk): index for index, chunk in enumerate(args)}
+            for future in as_completed(futures):
+                index = futures[future]
+                results[index] = future.result()
+                progress.update(len(results[index]))
     else:
         with ThreadPoolExecutor(max_workers=max_workers) as exe:
             f = functools.partial(_relabel_worker, model=model, reward_fn=reward_fn)
-            result = exe.map(f, args)
+            futures = {exe.submit(f, chunk): index for index, chunk in enumerate(args)}
+            for future in as_completed(futures):
+                index = futures[future]
+                results[index] = future.result()
+                progress.update(len(results[index]))
 
-    return np.concatenate([r for r in result])
+    progress.close()
+    if any(result is None for result in results):
+        raise RuntimeError("Reward relabeling did not return every chunk")
+
+    return np.concatenate([result for result in results if result is not None])
